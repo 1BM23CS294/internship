@@ -1,7 +1,5 @@
 
-import { Logo } from '@/components/logo';
-import { Card, CardContent } from '@/components/ui/card';
-import { FileText, Lightbulb, UploadCloud } from 'lucide-react';
+import { ScanText, Lightbulb, UploadCloud, FileText } from 'lucide-react';
 
 const steps = [
   {
@@ -26,7 +24,7 @@ export function WelcomeSplash() {
     <div className="flex flex-col items-center justify-center h-full p-4 md:p-8 text-center rounded-xl">
       <div className="mb-8">
          <div className="flex justify-center items-center w-24 h-24 rounded-full bg-primary/10 border mb-4">
-           <Logo size='lg'/>
+           <ScanText className="h-12 w-12 text-primary" />
          </div>
       </div>
       <h2 className="text-4xl font-bold tracking-tight mb-3">Unlock Your Perfect Hire, Instantly</h2>

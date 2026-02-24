@@ -43,25 +43,18 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20 border-2 border-primary shadow-sm">
                 <AvatarImage src={avatarPlaceholder?.imageUrl} alt={candidate.name} data-ai-hint={avatarPlaceholder?.imageHint} />
                 <AvatarFallback className="text-2xl bg-muted">{getInitials(candidate.name)}</AvatarFallback>
               </Avatar>
-              <div className='sm:hidden'>
-                <h2 className="text-2xl font-bold leading-none tracking-tight">{candidate.name}</h2>
+              <div>
+                <h2 className="text-3xl font-bold leading-none tracking-tight">{candidate.name}</h2>
                 <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-sm mt-2 text-muted-foreground">
                   {candidate.email && <span className="flex items-center gap-1.5"><Mail size={14} /> {candidate.email}</span>}
                   {candidate.phone && <span className="flex items-center gap-1.5"><Phone size={14} /> {candidate.phone}</span>}
                 </div>
-              </div>
-            </div>
-            <div className="flex-1 hidden sm:block">
-              <h2 className="text-3xl font-bold leading-none tracking-tight">{candidate.name}</h2>
-              <div className="flex items-center gap-4 text-sm mt-2 text-muted-foreground">
-                {candidate.email && <span className="flex items-center gap-1.5"><Mail size={14} /> {candidate.email}</span>}
-                {candidate.phone && <span className="flex items-center gap-1.5"><Phone size={14} /> {candidate.phone}</span>}
               </div>
             </div>
             <div className="flex flex-col items-center gap-2">
@@ -90,7 +83,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
               <CardContent className="space-y-6">
                 {candidate.experience.length > 0 ? candidate.experience.map((exp, index) => (
                   <div key={index} className="pl-4 border-l-2 border-primary/50 relative">
-                     <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-1 border-2 border-background"></div>
+                     <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7px] top-1 border-2 border-card"></div>
                     <h3 className="font-semibold">{exp.title}</h3>
                     <p className='font-medium text-muted-foreground'>{exp.company}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">

@@ -23,6 +23,8 @@ import {
   SidebarProvider,
   SidebarInset,
 } from '@/components/ui/sidebar';
+import { CircularProgress } from './components/circular-progress';
+
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -91,6 +93,7 @@ export default function Home() {
     const resume = formData.get('resumeFile') as File;
     if (jobDesc && resume?.size > 0) {
       setIsLoading(true);
+      setSelectedCandidate(null);
     }
     // The actual submission is handled by the form action
   };
@@ -142,7 +145,7 @@ export default function Home() {
                     </CardContent>
                 </Card>
                 </div>
-                <div className="p-4 border-t mt-auto sticky bottom-0 bg-background">
+                <div className="p-4 border-t mt-auto sticky bottom-0 bg-sidebar">
                 <SubmitButton />
                 </div>
             </form>
@@ -151,19 +154,22 @@ export default function Home() {
                 <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Users size={18} /> Candidates</CardTitle>
                 </CardHeader>
-                <ScrollArea className="h-48 px-6 pb-6">
+                <ScrollArea className="h-48 px-4 pb-4">
                 {candidates.length > 0 ? (
                     <ul className="space-y-2">
                         {candidates.map((c) => (
                         <li key={c.id}>
                             <button 
-                            onClick={() => setSelectedCandidate(c)} 
-                            className={cn(
-                                "w-full text-left p-3 rounded-lg transition-colors", 
-                                selectedCandidate?.id === c.id ? "bg-primary text-primary-foreground" : "hover:bg-muted"
-                            )}>
-                            <p className="font-semibold truncate">{c.candidate.name}</p>
-                            <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
+                                onClick={() => setSelectedCandidate(c)} 
+                                className={cn(
+                                    "w-full text-left p-3 rounded-lg transition-colors flex items-center justify-between gap-4", 
+                                    selectedCandidate?.id === c.id ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                                )}>
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="font-semibold truncate">{c.candidate.name}</p>
+                                    <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
+                                </div>
+                                <CircularProgress value={c.matchScore.matchScore} size={36} strokeWidth={4} />
                             </button>
                         </li>
                         ))}
