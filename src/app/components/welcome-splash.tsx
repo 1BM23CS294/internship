@@ -1,55 +1,67 @@
 
-import { ScanText, Lightbulb, UploadCloud, FileText } from 'lucide-react';
-
-const steps = [
-  {
-    icon: <FileText className="h-8 w-8 text-primary" />,
-    title: 'Provide Job Description',
-    description: 'Paste the job details to set the benchmark for your ideal candidate.',
-  },
-  {
-    icon: <UploadCloud className="h-8 w-8 text-primary" />,
-    title: 'Upload a Resume',
-    description: 'Upload a candidate\'s resume in PDF or DOCX format for analysis.',
-  },
-  {
-    icon: <Lightbulb className="h-8 w-8 text-primary" />,
-    title: 'Get AI-Powered Insights',
-    description: 'Receive a match score, strength/weakness analysis, and tailored interview questions.',
-  }
-];
+import { FileText, UploadCloud, Lightbulb, Bot } from 'lucide-react';
 
 export function WelcomeSplash() {
   return (
-    <div className="flex flex-col items-center justify-center h-full p-4 md:p-8 text-center rounded-xl">
-      <div className="mb-8">
-         <div className="flex justify-center items-center w-24 h-24 rounded-full bg-primary/10 border mb-4">
-           <ScanText className="h-12 w-12 text-primary" />
-         </div>
-      </div>
-      <h2 className="text-4xl font-bold tracking-tight mb-3">Unlock Your Perfect Hire, Instantly</h2>
-      <p className="text-muted-foreground max-w-2xl mb-12 text-lg">
-        Streamline your recruitment with AI. Stop manually screening resumes and let our intelligent analysis find the best-fit candidates in seconds.
-      </p>
-      
-      <div className="w-full max-w-4xl">
-        <div className="grid md:grid-cols-3 gap-8 text-center">
-          {steps.map((step, index) => (
-            <div key={index} className="flex flex-col items-center gap-4">
-               <div className="flex items-center justify-center h-16 w-16 bg-background rounded-full border shadow-sm">
-                 {step.icon}
-               </div>
-               <div className="flex-1">
-                 <h3 className="font-semibold text-lg mb-1">{step.title}</h3>
-                 <p className="text-sm text-muted-foreground">{step.description}</p>
-               </div>
-            </div>
-          ))}
+    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4 md:p-8 text-center">
+      <div className="max-w-4xl mx-auto">
+        <div className="relative mb-8">
+          <div className="absolute -inset-2 bg-gradient-to-r from-primary to-blue-500 rounded-full blur-xl opacity-20"></div>
+          <div className="relative flex justify-center items-center w-32 h-32 rounded-full bg-primary/10 border-2 border-primary/20 shadow-lg mx-auto">
+            <Bot className="h-16 w-16 text-primary" />
+          </div>
         </div>
+        
+        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+          Intelligent Resume Analyzer
+        </h2>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+          Leverage AI to instantly screen resumes, score candidates, and uncover the perfect hire.
+        </p>
+        
+        <div className="grid md:grid-cols-3 gap-6 text-left">
+          <div className="p-6 bg-card border rounded-lg shadow-sm">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="bg-primary/10 p-2 rounded-lg">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">1. Job Description</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Paste the job description to set the benchmark for your ideal candidate.
+            </p>
+
+          </div>
+          
+          <div className="p-6 bg-card border rounded-lg shadow-sm">
+            <div className="flex items-center gap-4 mb-3">
+               <div className="bg-primary/10 p-2 rounded-lg">
+                <UploadCloud className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">2. Upload Resume</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Upload a candidate’s resume in PDF or DOCX format for analysis.
+            </p>
+          </div>
+
+          <div className="p-6 bg-card border rounded-lg shadow-sm">
+            <div className="flex items-center gap-4 mb-3">
+               <div className="bg-primary/10 p-2 rounded-lg">
+                <Lightbulb className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-lg">3. Get Insights</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Receive a match score, strength/weakness analysis, and tailored interview questions.
+            </p>
+          </div>
+        </div>
+        
+        <p className="text-sm text-muted-foreground mt-12">
+          Start by filling out the form in the sidebar.
+        </p>
       </div>
-       <p className="text-xs text-muted-foreground mt-16">
-        Get started by providing a job description and uploading a resume on the left panel.
-      </p>
     </div>
   );
 }
