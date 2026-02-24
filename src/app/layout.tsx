@@ -3,7 +3,7 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CareerMatch AI',
+  title: 'Intelligent Resume Analyzer',
   description: 'An intelligent resume analyzer to streamline your hiring process.',
 };
 

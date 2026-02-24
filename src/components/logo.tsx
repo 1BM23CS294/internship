@@ -8,7 +8,7 @@ export function Logo({ size = 'default' }: { size?: 'default' | 'lg' }) {
     <div className={cn("flex items-center gap-2", isLarge && "flex-col gap-1")}>
       <Briefcase className={cn("text-primary", isLarge ? "h-8 w-8" : "h-6 w-6")} />
       <h1 className={cn("font-bold", isLarge ? "text-2xl" : "text-xl")}>
-        CareerMatch AI
+        Intelligent Resume Analyzer
       </h1>
     </div>
   );
