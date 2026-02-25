@@ -163,7 +163,7 @@ export default function Home() {
         <div className="flex flex-col h-full bg-sidebar/80 backdrop-blur-xl border-r border-border/20">
             <form ref={formRef} action={formAction} onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-y-auto">
                 <div className="p-4 space-y-6 flex-1">
-                <Card className='bg-transparent border-border/30'>
+                <Card className='bg-card/30 backdrop-blur-lg border-primary/40'>
                     <CardHeader>
                     <CardTitle className="flex items-center gap-2"><FileText size={18} /> Job Description</CardTitle>
                     </CardHeader>
@@ -180,7 +180,7 @@ export default function Home() {
                     </CardContent>
                 </Card>
 
-                <Card className='bg-transparent border-border/30'>
+                <Card className='bg-card/30 backdrop-blur-lg border-primary/40'>
                     <CardHeader>
                     <CardTitle className="flex items-center gap-2"><UploadCloud size={18} /> Resume Upload</CardTitle>
                     </CardHeader>

@@ -39,7 +39,7 @@ function getInitials(name: string) {
 }
 
 function GlassCard({ className, ...props }: React.ComponentProps<typeof Card>) {
-    return <Card className={cn('border-primary/20 bg-card/10 backdrop-blur-lg', className)} {...props} />;
+    return <Card className={cn('border-primary/40 bg-card/30 backdrop-blur-lg', className)} {...props} />;
 }
 
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
@@ -74,7 +74,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
       
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-            <GlassCard className="bg-primary/10 border-primary/30">
+            <GlassCard className="bg-primary/20 border-primary/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary"><Sparkles size={18} /> AI Analysis</CardTitle>
               </CardHeader>
