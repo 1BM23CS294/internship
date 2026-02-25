@@ -9,6 +9,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   AuthError,
+  updateProfile,
 } from 'firebase/auth';
 import { getDoc, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useAuth, useUser, useFirestore } from '@/firebase';
@@ -43,6 +44,8 @@ const content = {
 export function AuthForm({ mode }: { mode: AuthMode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -105,13 +108,18 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
       } else {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         const user = result.user;
+
+        const displayName = `${firstName} ${lastName}`.trim();
+        await updateProfile(user, { displayName });
+
         const userDocRef = doc(firestore, 'users', user.uid);
         
         const userData = {
           id: user.uid,
           email: user.email,
-          firstName: '',
-          lastName: '',
+          firstName: firstName,
+          lastName: lastName,
+          photoURL: user.photoURL,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -206,6 +214,34 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+                {mode === 'signup' && (
+                    <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="space-y-2 flex-1">
+                            <Label htmlFor="firstName">First Name</Label>
+                            <Input
+                                id="firstName"
+                                type="text"
+                                placeholder="John"
+                                value={firstName}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                required
+                                className="bg-background/50 border-border/50"
+                            />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                            <Label htmlFor="lastName">Last Name</Label>
+                            <Input
+                                id="lastName"
+                                type="text"
+                                placeholder="Doe"
+                                value={lastName}
+                                onChange={(e) => setLastName(e.target.value)}
+                                required
+                                className="bg-background/50 border-border/50"
+                            />
+                        </div>
+                    </div>
+                )}
                 <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <Input
@@ -227,6 +263,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         className="bg-background/50 border-border/50"
+                        placeholder="••••••••"
                     />
                 </div>
                 {error && <p className="text-sm text-red-500 text-center">{error}</p>}
