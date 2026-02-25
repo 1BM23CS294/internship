@@ -25,13 +25,13 @@ type AuthMode = 'login' | 'signup';
 
 const content = {
   login: {
-    title: 'Welcome Back!',
-    description: 'Sign in to access the Intelligent Resume Analyzer.',
+    title: 'Intelligent Resume Analyzer',
+    description: 'Welcome back! Please sign in to continue.',
     icon: LogIn,
   },
   signup: {
-    title: 'Create an Account',
-    description: 'Sign up to start analyzing resumes.',
+    title: 'Intelligent Resume Analyzer',
+    description: 'Create an account to get started.',
     icon: UserCheck,
   },
 };
@@ -134,15 +134,13 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <Card className="w-full max-w-md bg-card/60 backdrop-blur-lg border-primary/20 shadow-2xl shadow-primary/10">
-        <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary">
-                    <Icon className="h-7 w-7" />
-                </div>
+    <Card className="w-full max-w-md bg-card/50 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10">
+        <CardHeader className="text-center space-y-4">
+            <Icon className="h-10 w-10 text-primary mx-auto" />
+            <div>
+              <CardTitle className="text-2xl">{title}</CardTitle>
+              <CardDescription>{description}</CardDescription>
             </div>
-            <CardTitle className="text-2xl">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
