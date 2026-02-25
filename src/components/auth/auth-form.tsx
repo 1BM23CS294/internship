@@ -134,8 +134,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                     <ScanText className="h-7 w-7" />
                 </div>
             </div>
-            <CardTitle className="text-2xl">{titles[mode]}</CardTitle>
-            <CardDescription>{descriptions[mode]}</CardDescription>
+            <CardTitle className="text-2xl">Intelligent Resume Analyzer</CardTitle>
+            <CardDescription>{titles[mode]}</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
