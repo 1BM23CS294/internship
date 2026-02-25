@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { CircularProgress } from './circular-progress';
+import { cn } from '@/lib/utils';
 
 function getInitials(name: string) {
   if (!name) return '??';
@@ -37,13 +38,17 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
+function GlassCard({ className, ...props }: React.ComponentProps<typeof Card>) {
+    return <Card className={cn('border-primary/20 bg-card/10 backdrop-blur-lg', className)} {...props} />;
+}
+
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
   const { candidate, matchScore, recommendations } = data;
   const avatarPlaceholder = PlaceHolderImages.find(img => img.id === 'user-avatar');
 
   return (
     <div className="space-y-6">
-      <Card>
+      <GlassCard>
         <CardHeader>
           <div className="flex flex-wrap items-center justify-between gap-6">
             <div className="flex items-center gap-4">
@@ -65,20 +70,20 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
             </div>
           </div>
         </CardHeader>
-      </Card>
+      </GlassCard>
       
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-            <Card className="bg-primary/5 border-primary/20">
+            <GlassCard className="bg-primary/10 border-primary/30">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary"><Sparkles size={18} /> AI Analysis</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-primary/90 leading-relaxed">{matchScore.explanation}</p>
               </CardContent>
-            </Card>
+            </GlassCard>
 
-            <Card>
+            <GlassCard>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Briefcase size={18} /> Work Experience</CardTitle>
               </CardHeader>
@@ -95,9 +100,9 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                   </div>
                 )) : <p className="text-sm text-muted-foreground">No work experience found.</p>}
               </CardContent>
-            </Card>
+            </GlassCard>
 
-            <Card>
+            <GlassCard>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><GraduationCap size={18} /> Education</CardTitle>
               </CardHeader>
@@ -115,31 +120,31 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                   </div>
                 )) : <p className="text-sm text-muted-foreground">No education information found.</p>}
               </CardContent>
-            </Card>
+            </GlassCard>
         </div>
 
         <div className="space-y-6">
-          <Card>
+          <GlassCard>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Target size={18} /> Skills</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {candidate.skills.length > 0 ? candidate.skills.map((skill, index) => (
-                  <Badge key={index} variant="secondary" className='text-sm font-normal'>{skill}</Badge>
+                  <Badge key={index} variant="secondary" className='text-sm font-normal bg-accent/50'>{skill}</Badge>
                 )) : <p className="text-sm text-muted-foreground">No skills found.</p>}
               </div>
             </CardContent>
-          </Card>
+          </GlassCard>
 
-          <Card>
+          <GlassCard>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Lightbulb size={18} /> Hiring Recommendations</CardTitle>
             </CardHeader>
             <CardContent>
               <Accordion type="single" collapsible defaultValue="item-1">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger><div className='flex items-center gap-2'><TrendingUp className="text-green-500"/> Strengths</div></AccordionTrigger>
+                  <AccordionTrigger><div className='flex items-center gap-2'><TrendingUp className="text-green-400"/> Strengths</div></AccordionTrigger>
                   <AccordionContent>
                     <ul className="list-disc pl-5 space-y-1 text-sm">
                       {recommendations.strengths.map((s, i) => <li key={i}>{s}</li>)}
@@ -147,7 +152,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger><div className='flex items-center gap-2'><TrendingDown className="text-destructive"/> Weaknesses</div></AccordionTrigger>
+                  <AccordionTrigger><div className='flex items-center gap-2'><TrendingDown className="text-red-400"/> Weaknesses</div></AccordionTrigger>
                   <AccordionContent>
                     <ul className="list-disc pl-5 space-y-1 text-sm">
                       {recommendations.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
@@ -169,7 +174,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 <p className="text-sm text-muted-foreground">{recommendations.overallRecommendation}</p>
               </div>
             </CardContent>
-          </Card>
+          </GlassCard>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2 } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2 } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -135,7 +135,17 @@ export default function Home() {
       setIsLoading(true);
       setSelectedCandidate(null);
     }
+    formAction(formData);
   };
+  
+  const clearHistory = () => {
+    setCandidates([]);
+    setSelectedCandidate(null);
+    toast({
+        title: "History Cleared",
+        description: "All candidate analyses have been removed.",
+    });
+  }
 
   const renderContent = () => {
     if (isLoading) {
@@ -150,10 +160,10 @@ export default function Home() {
   return (
      <SidebarProvider style={{ '--sidebar-width': '380px' } as React.CSSProperties}>
       <Sidebar>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full bg-sidebar/80 backdrop-blur-xl border-r border-border/20">
             <form ref={formRef} action={formAction} onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-y-auto">
                 <div className="p-4 space-y-6 flex-1">
-                <Card>
+                <Card className='bg-transparent border-border/30'>
                     <CardHeader>
                     <CardTitle className="flex items-center gap-2"><FileText size={18} /> Job Description</CardTitle>
                     </CardHeader>
@@ -163,35 +173,41 @@ export default function Home() {
                         id="job-description"
                         name="jobDescription"
                         placeholder="Paste the job description here..."
-                        className="min-h-[200px] text-sm"
+                        className="min-h-[200px] text-sm bg-background/50 border-border/50"
                         required
                     />
                     {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
                     </CardContent>
                 </Card>
 
-                <Card>
+                <Card className='bg-transparent border-border/30'>
                     <CardHeader>
                     <CardTitle className="flex items-center gap-2"><UploadCloud size={18} /> Resume Upload</CardTitle>
                     </CardHeader>
                     <CardContent>
                     <Label htmlFor="resume-file" className="sr-only">Resume</Label>
                     <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required/>
-                        <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                        <Button type="button" variant="outline" className="w-full bg-transparent hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
                         {fileName ? <span className="truncate">{fileName}</span> : 'Select a file (PDF, DOCX)'}
                         </Button>
                     {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
                     </CardContent>
                 </Card>
                 </div>
-                <div className="p-4 border-t mt-auto sticky bottom-0 bg-sidebar">
+                <div className="p-4 border-t border-border/30 mt-auto sticky bottom-0 bg-sidebar/80 backdrop-blur-xl">
                 <SubmitButton />
                 </div>
             </form>
 
-            <div className="border-t flex-shrink-0">
-                <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Users size={18} /> Candidates</CardTitle>
+            <div className="border-t border-border/30 flex-shrink-0">
+                <CardHeader className='flex-row items-center justify-between'>
+                    <CardTitle className="flex items-center gap-2"><Users size={18} /> Candidates</CardTitle>
+                    {candidates.length > 0 && (
+                        <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                            <Trash2 size={16}/>
+                            <span className='sr-only'>Clear History</span>
+                        </Button>
+                    )}
                 </CardHeader>
                 <ScrollArea className="h-48 px-4 pb-4">
                 {candidates.length > 0 ? (
@@ -202,10 +218,10 @@ export default function Home() {
                                 onClick={() => setSelectedCandidate(c)}
                                 className={cn(
                                     "w-full text-left p-2 rounded-lg transition-colors flex items-center gap-3 group",
-                                    selectedCandidate?.id === c.id ? "bg-primary text-primary-foreground" : "hover:bg-accent"
+                                    selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground" : "hover:bg-accent/50"
                                 )}>
                                 <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary/20">
-                                     <AvatarFallback className={cn("text-sm", selectedCandidate?.id === c.id ? "bg-primary-foreground text-primary" : "bg-muted")}>
+                                     <AvatarFallback className={cn("text-sm", selectedCandidate?.id === c.id ? "bg-primary-foreground text-primary" : "bg-muted/80")}>
                                         {getInitials(c.candidate.name)}
                                     </AvatarFallback>
                                 </Avatar>
@@ -225,10 +241,10 @@ export default function Home() {
             </div>
         </div>
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className='bg-transparent'>
         <Header />
         <ScrollArea className="h-[calc(100vh-4rem)]">
-            <div className="p-6 lg:p-8 bg-background-inset">
+            <div className="p-6 lg:p-8">
             {renderContent()}
             </div>
         </ScrollArea>

@@ -1,64 +1,52 @@
-
-import { FileText, UploadCloud, Lightbulb, Bot } from 'lucide-react';
+import { BrainCircuit, ClipboardCheck, FileSearch, MoveRight } from 'lucide-react';
 
 export function WelcomeSplash() {
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4 md:p-8 text-center">
       <div className="max-w-4xl mx-auto">
-        <div className="relative mb-8">
-          <div className="absolute -inset-2 bg-gradient-to-r from-primary to-blue-500 rounded-full blur-xl opacity-20"></div>
-          <div className="relative flex justify-center items-center w-32 h-32 rounded-full bg-primary/10 border-2 border-primary/20 shadow-lg mx-auto">
-            <Bot className="h-16 w-16 text-primary" />
-          </div>
-        </div>
-        
-        <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">
+
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-r from-primary/80 to-white">
           Intelligent Resume Analyzer
-        </h2>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12">
+        </h1>
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-16">
           Leverage AI to instantly screen resumes, score candidates, and uncover the perfect hire.
         </p>
         
-        <div className="grid md:grid-cols-3 gap-6 text-left">
-          <div className="p-6 bg-card border rounded-lg shadow-sm">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="bg-primary/10 p-2 rounded-lg">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">1. Job Description</h3>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Paste the job description to set the benchmark for your ideal candidate.
-            </p>
+        <div className="relative flex items-center justify-center gap-4 md:gap-8">
 
-          </div>
-          
-          <div className="p-6 bg-card border rounded-lg shadow-sm">
-            <div className="flex items-center gap-4 mb-3">
-               <div className="bg-primary/10 p-2 rounded-lg">
-                <UploadCloud className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">2. Upload Resume</h3>
+            <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent -translate-y-1/2 -z-10"></div>
+            <div className="absolute top-1/2 left-0 w-full h-full bg-gradient-to-t from-background/0 via-background to-background/0 -z-10"></div>
+            
+            {/* Step 1: Resume */}
+            <div className="flex flex-col items-center gap-2 text-center w-40">
+                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-background border-2 border-primary/30 text-primary shadow-lg shadow-primary/10">
+                    <FileSearch className="h-10 w-10" />
+                </div>
+                <h3 className="font-semibold text-lg">Resume</h3>
+                <p className="text-xs text-muted-foreground">Upload resume for analysis</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Upload a candidate’s resume in PDF or DOCX format for analysis.
-            </p>
-          </div>
-
-          <div className="p-6 bg-card border rounded-lg shadow-sm">
-            <div className="flex items-center gap-4 mb-3">
-               <div className="bg-primary/10 p-2 rounded-lg">
-                <Lightbulb className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-lg">3. Get Insights</h3>
+            
+            {/* Step 2: AI Brain */}
+            <div className="flex flex-col items-center gap-2 text-center w-40">
+                <div className="flex items-center justify-center w-24 h-24 rounded-full bg-background border-2 border-primary text-primary shadow-2xl shadow-primary/30 relative">
+                     <div className="absolute -inset-2 bg-primary/20 rounded-full blur-lg animate-pulse"></div>
+                    <BrainCircuit className="h-12 w-12" />
+                </div>
+                 <h3 className="font-semibold text-lg">AI Analysis</h3>
+                 <p className="text-xs text-muted-foreground">Extracts skills & experience</p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Receive a match score, strength/weakness analysis, and tailored interview questions.
-            </p>
-          </div>
+            
+            {/* Step 3: Report */}
+            <div className="flex flex-col items-center gap-2 text-center w-40">
+                <div className="flex items-center justify-center w-20 h-20 rounded-full bg-background border-2 border-primary/30 text-primary shadow-lg shadow-primary/10">
+                    <ClipboardCheck className="h-10 w-10" />
+                </div>
+                 <h3 className="font-semibold text-lg">Analysis Report</h3>
+                 <p className="text-xs text-muted-foreground">Get match score & insights</p>
+            </div>
         </div>
-        
-        <p className="text-sm text-muted-foreground mt-12">
+
+        <p className="text-sm text-muted-foreground mt-20">
           Start by filling out the form in the sidebar.
         </p>
       </div>
