@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ScanText } from 'lucide-react';
+import { Loader2, LogIn, UserCheck } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card';
 import { GoogleIcon } from './google-icon';
@@ -23,15 +23,19 @@ import { cn } from '@/lib/utils';
 
 type AuthMode = 'login' | 'signup';
 
-const titles = {
-  login: 'Welcome Back!',
-  signup: 'Create an Account',
+const content = {
+  login: {
+    title: 'Welcome Back!',
+    description: 'Sign in to access the Intelligent Resume Analyzer.',
+    icon: LogIn,
+  },
+  signup: {
+    title: 'Create an Account',
+    description: 'Sign up to start analyzing resumes.',
+    icon: UserCheck,
+  },
 };
 
-const descriptions = {
-  login: 'Sign in to access your dashboard.',
-  signup: 'Sign up to start analyzing resumes.',
-};
 
 export function AuthForm({ mode }: { mode: AuthMode }) {
   const [email, setEmail] = useState('');
@@ -43,6 +47,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
+  
+  const { title, description, icon: Icon } = content[mode];
+
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -131,11 +138,11 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 border border-primary/20 text-primary">
-                    <ScanText className="h-7 w-7" />
+                    <Icon className="h-7 w-7" />
                 </div>
             </div>
-            <CardTitle className="text-2xl">Intelligent Resume Analyzer</CardTitle>
-            <CardDescription>{titles[mode]}</CardDescription>
+            <CardTitle className="text-2xl">{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
