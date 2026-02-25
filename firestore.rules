@@ -1,0 +1,185 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model where all
+ * data is considered private to the user who created it. Access control is based
+ * on the user's authenticated UID, ensuring that a user can only interact with
+ * their own data.
+ *
+ * Data Structure: The data is organized hierarchically. A top-level `/users`
+ * collection holds individual user documents, identified by the user's UID. All
+ * other data, such as resumes, job descriptions, and analysis reports, are stored
+ * in subcollections directly under the corresponding user's document
+ * (e.g., `/users/{userId}/resumes/{resumeId}`).
+ *
+ * Key Security Decisions:
+ * - User Enumeration Prevention: Listing the top-level `/users` collection is
+ *   explicitly disallowed to prevent malicious actors from harvesting a list of
+ *   all user IDs.
+ * - Strict Path-Based Ownership: All rules for subcollections rely on matching the
+ *   `userId` from the document path with the authenticated user's UID. This is the
+ *   primary security mechanism.
+ * - No Public Data: There are no publicly readable collections. A user must be
+ *   signed in to access any resource.
+ *
+ * Denormalization for Authorization: The security model relies on denormalizing the
+ * owner's `userId` into the path of every document. This avoids the need for slow
+ * and costly `get()` calls to parent documents to verify ownership, resulting in
+ * faster and more secure rules. For example, a rule on
+ * `/users/{userId}/resumes/{resumeId}` can simply check `isOwner(userId)` without
+ * needing to read the parent `/users/{userId}` document.
+ *
+ * Structural Segregation: The data model naturally segregates each user's data
+ * into their own document tree. This clear separation ensures that one user cannot
+ * access another user's data and simplifies list operations, as any query against a
+ * subcollection is implicitly scoped to a single owner.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    //-------------------------------------------------------------------------//
+    // Helper Functions
+    //-------------------------------------------------------------------------//
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the primary function for establishing document ownership.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * A robust check for update/delete operations, ensuring the user is the owner
+     * AND that the document they are trying to modify actually exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * Validates required ownership fields for a new User document.
+     * Ensures the document's internal ID matches the user's UID.
+     */
+    function isValidUserDocOnCreate(userId) {
+      return request.resource.data.id == userId;
+    }
+
+    /**
+     * Validates that the core ownership ID of a User document is immutable.
+     */
+    function isValidUserDocOnUpdate() {
+      return request.resource.data.id == resource.data.id;
+    }
+
+    /**
+     * Validates ownership fields for a new document in a user subcollection.
+     * Ensures the document's internal userId points back to the owner.
+     */
+    function isValidSubcollectionDocOnCreate(userId) {
+      return request.resource.data.userId == userId;
+    }
+
+    /**
+     * Validates that the ownership link (`userId`) in a subcollection document
+     * is immutable and cannot be reassigned to another user.
+     */
+    function isValidSubcollectionDocOnUpdate() {
+      return request.resource.data.userId == resource.data.userId;
+    }
+
+
+    //-------------------------------------------------------------------------//
+    // Collection Rules
+    //-------------------------------------------------------------------------//
+
+    /**
+     * @description Manages user profile documents. A user can create their own
+     *   profile, and can only read, update, or delete their own document.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own document at `/users/user123`
+     *   where their auth.uid is 'user123'.
+     * @deny (list) Any user attempting to list the `/users` collection to prevent
+     *   user enumeration.
+     * @deny (get) User 'user456' attempting to read `/users/user123`.
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidUserDocOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isValidUserDocOnUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures a user's private collection of resumes. Only the
+     *   user specified in the path can perform any action on these documents.
+     * @path /users/{userId}/resumes/{resumeId}
+     * @allow (create) User 'user123' creating a new resume at
+     *   `/users/user123/resumes/resume-abc`.
+     * @allow (list) User 'user123' listing all documents within their own
+     *   `/users/user123/resumes` collection.
+     * @deny (get) User 'user456' attempting to read a document at
+     *   `/users/user123/resumes/resume-abc`.
+     * @principle Enforces document ownership for all CRUD and list operations within a
+     *   user's private subcollection.
+     */
+    match /users/{userId}/resumes/{resumeId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidSubcollectionDocOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures a user's private collection of job descriptions.
+     *   Only the user specified in the path can interact with these documents.
+     * @path /users/{userId}/jobDescriptions/{jobDescriptionId}
+     * @allow (create) User 'user123' creating a new job description at
+     *   `/users/user123/jobDescriptions/job-abc`.
+     * @allow (list) User 'user123' listing all documents within their own
+     *   `/users/user123/jobDescriptions` collection.
+     * @deny (delete) User 'user456' attempting to delete a document at
+     *   `/users/user123/jobDescriptions/job-abc`.
+     * @principle Enforces document ownership for all CRUD and list operations within a
+     *   user's private subcollection.
+     */
+    match /users/{userId}/jobDescriptions/{jobDescriptionId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidSubcollectionDocOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Secures a user's private collection of analysis reports.
+     *   Only the user specified in the path can interact with these documents.
+     * @path /users/{userId}/analysisReports/{analysisReportId}
+     * @allow (get) User 'user123' reading a report at
+     *   `/users/user123/analysisReports/report-abc`.
+     * @allow (list) User 'user123' listing all documents within their own
+     *   `/users/user123/analysisReports` collection.
+     * @deny (update) User 'user456' attempting to update a document at
+     *   `/users/user123/analysisReports/report-abc`.
+     * @principle Enforces document ownership for all CRUD and list operations within a
+     *   user's private subcollection.
+     */
+    match /users/{userId}/analysisReports/{analysisReportId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidSubcollectionDocOnCreate(userId);
+      allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
+      allow delete: if isExistingOwner(userId);
+    }
+
+  }
+}

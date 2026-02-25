@@ -1,0 +1,276 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the CareerMatch AI application, providing authentication and linking to their resumes, job descriptions, and analysis reports.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, used for login and identification.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Resume": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Resume",
+      "type": "object",
+      "description": "Stores the details of an uploaded and parsed resume, linked to a specific user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Resume entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Resume)"
+        },
+        "fileName": {
+          "type": "string",
+          "description": "The original file name of the uploaded resume."
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Timestamp when the resume file was uploaded.",
+          "format": "date-time"
+        },
+        "fileStoragePath": {
+          "type": "string",
+          "description": "The URI or path to where the actual resume file is stored (e.g., S3 URL, local path).",
+          "format": "uri"
+        },
+        "parsedDataJson": {
+          "type": "string",
+          "description": "A JSON string containing the extracted and structured information from the resume, such as contact details, skills, work experience, and education."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "fileName",
+        "uploadDate",
+        "fileStoragePath",
+        "parsedDataJson"
+      ]
+    },
+    "JobDescription": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "JobDescription",
+      "type": "object",
+      "description": "Stores the job description text and its extracted requirements, input by a user for analysis.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the JobDescription entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N JobDescription)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title given to the job description by the user."
+        },
+        "text": {
+          "type": "string",
+          "description": "The full, raw text of the job description input by the user."
+        },
+        "inputDate": {
+          "type": "string",
+          "description": "Timestamp when the job description was input.",
+          "format": "date-time"
+        },
+        "extractedSkills": {
+          "type": "array",
+          "description": "An array of skills identified and extracted by the AI from the job description.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "extractedRequirementsJson": {
+          "type": "string",
+          "description": "A JSON string containing other key requirements and preferences extracted by AI from the job description."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "text",
+        "inputDate",
+        "extractedSkills",
+        "extractedRequirementsJson"
+      ]
+    },
+    "AnalysisReport": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AnalysisReport",
+      "type": "object",
+      "description": "Contains the results of a resume analysis, including match scores and hiring recommendations, linking a specific resume to a job description for a user.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AnalysisReport entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N AnalysisReport)"
+        },
+        "resumeId": {
+          "type": "string",
+          "description": "Reference to Resume. (Relationship: Resume 1:N AnalysisReport)"
+        },
+        "jobDescriptionId": {
+          "type": "string",
+          "description": "Reference to JobDescription. (Relationship: JobDescription 1:N AnalysisReport)"
+        },
+        "analysisDate": {
+          "type": "string",
+          "description": "Timestamp when the analysis report was generated.",
+          "format": "date-time"
+        },
+        "matchScore": {
+          "type": "number",
+          "description": "The calculated match score (0-100) indicating how well the resume aligns with the job description."
+        },
+        "recommendationsJson": {
+          "type": "string",
+          "description": "A JSON string containing AI-generated hiring recommendations and insights based on the analysis."
+        },
+        "detailedAnalysisJson": {
+          "type": "string",
+          "description": "A JSON string containing a detailed breakdown of the matching process, such as skill-by-skill comparison, experience relevance, and other contributing factors."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "resumeId",
+        "jobDescriptionId",
+        "analysisDate",
+        "matchScore",
+        "recommendationsJson",
+        "detailedAnalysisJson"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile data, where `userId` matches `request.auth.uid`. This document serves as the root for all user-specific, private data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user, matching Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/resumes/{resumeId}",
+        "definition": {
+          "entityName": "Resume",
+          "schema": {
+            "$ref": "#/backend/entities/Resume"
+          },
+          "description": "Stores uploaded and parsed resume details belonging to a specific user. Includes denormalized 'userId' in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who owns this resume."
+            },
+            {
+              "name": "resumeId",
+              "description": "The unique ID of the resume."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/jobDescriptions/{jobDescriptionId}",
+        "definition": {
+          "entityName": "JobDescription",
+          "schema": {
+            "$ref": "#/backend/entities/JobDescription"
+          },
+          "description": "Stores job descriptions input by a specific user for analysis. Includes denormalized 'userId' in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who owns this job description."
+            },
+            {
+              "name": "jobDescriptionId",
+              "description": "The unique ID of the job description."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/analysisReports/{analysisReportId}",
+        "definition": {
+          "entityName": "AnalysisReport",
+          "schema": {
+            "$ref": "#/backend/entities/AnalysisReport"
+          },
+          "description": "Stores AI-generated analysis reports, linking a specific resume to a job description for a user. Includes denormalized 'userId' in the path for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user who owns this analysis report."
+            },
+            {
+              "name": "analysisReportId",
+              "description": "The unique ID of the analysis report."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The recommended Firestore structure for CareerMatch AI strictly adheres to the core design principles, prioritizing security, scalability, and debuggability. All user-specific data is organized under a top-level `/users/{userId}` collection, followed by subcollections for `resumes`, `jobDescriptions`, and `analysisReports`. This hierarchical, path-based ownership model is fundamental to the design.\n\n**Authorization Independence:** This structure achieves Authorization Independence by explicitly embedding the `userId` within the path of all user-owned documents (e.g., `/users/{userId}/resumes/{resumeId}`). This means that security rules can directly evaluate `request.auth.uid == userId` (where `userId` is the wildcard in the path) without needing to perform costly and complex `get()` operations on parent documents. The `userId` field is also present within the document payload as an additional integrity check, but the primary authorization context is provided by the path. This design enables atomic operations, such as creating a user's profile and their first resume in a single batched write, without running into authorization dependency issues.\n\n**QAPs (Secure List Operations):** The structure inherently supports Query As Permissions (QAPs) by ensuring that all documents within a given subcollection (e.g., `/users/{userId}/resumes`) share the exact same security requirements: they are private to the `userId` in the path. This allows for simple and efficient security rules like `allow list, read: if request.auth.uid == userId;`. A user can only `list` or `read` documents from their *own* `/users/{uid}/resumes` collection, making it impossible for them to accidentally or maliciously query another user's data. This segregation by ownership eliminates the need for complex, inefficient, or insecure query filters in security rules.\n\n**Structural Segregation & Access Modeling:** Each collection (`/users`, `/users/{userId}/resumes`, etc.) maintains a homogeneous security posture—all documents within are private and owned by the `userId` in the path. This simplifies rule writing significantly, as there's no mixing of public, private, or collaborative data within the same collection. The use of hierarchical paths for `User 1:N Entity` relationships (e.g., a User has many Resumes, Job Descriptions, and Analysis Reports) is consistently applied, making ownership explicit and rules straightforward. Wildcards are semantically named (`userId`, `resumeId`, `jobDescriptionId`, `analysisReportId`) for clarity and predictability."
+  }
+}
