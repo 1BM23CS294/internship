@@ -204,7 +204,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <Card className="w-full max-w-md bg-card/40 backdrop-blur-lg border border-primary/10 shadow-2xl shadow-primary/10">
+    <Card className="w-full max-w-md bg-card/20 backdrop-blur-lg border border-primary/10 shadow-2xl shadow-primary/10">
         <CardHeader className="text-center space-y-4">
             <Icon className="h-10 w-10 text-primary mx-auto" />
             <div>

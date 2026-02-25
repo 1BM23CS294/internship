@@ -11,7 +11,7 @@ export default function AuthLayout({
             src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?q=80&w=2070&auto=format&fit=crop"
             alt="Abstract robotics background"
             fill
-            className="object-cover -z-10 filter blur-sm brightness-75"
+            className="object-cover -z-10 filter blur-sm brightness-100"
         />
         {children}
     </main>
