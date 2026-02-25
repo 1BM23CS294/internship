@@ -65,7 +65,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }, [user, isUserLoading, router]);
 
   const handleAuthError = (err: AuthError) => {
-    console.error(err);
     let message = 'An unknown error occurred.';
     switch (err.code) {
       case 'auth/user-not-found':
@@ -125,7 +124,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         };
 
         setDoc(userDocRef, userData).catch((error) => {
-          console.error("Error creating user document:", error);
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'create',
@@ -173,7 +171,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         };
         
         setDoc(userDocRef, userData).catch((error) => {
-          console.error("Error creating user document on Google sign-in:", error);
           const permissionError = new FirestorePermissionError({
             path: userDocRef.path,
             operation: 'create',
