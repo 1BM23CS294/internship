@@ -32,8 +32,8 @@ export default function RootLayout({
       <body className={cn('font-body antialiased', 'dark')}>
         <FirebaseClientProvider>
             <Image
-                src="https://images.unsplash.com/photo-1550026593-de54974b486f?q=80&w=2070&auto=format&fit=crop"
-                alt="Abstract background with glowing UI elements"
+                src="https://images.unsplash.com/photo-1677442135725-341e2124d3e8?q=80&w=2070&auto=format&fit=crop"
+                alt="Robotics and AI themed abstract background"
                 fill
                 className="object-cover -z-10 filter brightness-75"
             />
