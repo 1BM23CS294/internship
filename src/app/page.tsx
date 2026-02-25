@@ -13,23 +13,16 @@ import { useToast } from '@/hooks/use-toast';
 import { CandidateReport } from './components/candidate-report';
 import { WelcomeSplash } from './components/welcome-splash';
 import { AnalysisLoading } from './components/analysis-loading';
-import { Header } from './components/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
-import {
-  Sidebar,
-  SidebarProvider,
-  SidebarInset,
-  SidebarFooter,
-} from '@/components/ui/sidebar';
-import { CircularProgress } from './components/circular-progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth, useUser } from '@/firebase';
 import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
-
+import { Logo } from '@/components/logo';
+import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -69,13 +62,12 @@ function getInitials(name: string) {
     .toUpperCase();
 }
 
-
 export default function Home() {
   const [state, formAction] = useActionState(analyzeResume, initialState);
   const [candidates, setCandidates] = useState<AnalyzedCandidate[]>([]);
   const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
   const [fileName, setFileName] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -88,7 +80,6 @@ export default function Home() {
     }
   }, [user, isUserLoading]);
 
-  // Load candidates from localStorage on initial client render
   useEffect(() => {
     if (user) {
       const savedCandidates = localStorage.getItem(`analyzedCandidates_${user.uid}`);
@@ -108,45 +99,54 @@ export default function Home() {
     }
   }, [user]);
 
-  // Save candidates to localStorage whenever the list changes
   useEffect(() => {
     if (user) {
       localStorage.setItem(`analyzedCandidates_${user.uid}`, JSON.stringify(candidates));
     }
   }, [candidates, user]);
 
-
   useEffect(() => {
-    if (state.success && state.data) {
-      const newCandidate = state.data;
-      setCandidates(prev => [newCandidate, ...prev]);
-      setSelectedCandidate(newCandidate);
-      toast({
-        title: "Analysis Complete",
-        description: `${newCandidate.candidate.name}'s resume has been analyzed.`,
-        variant: "default",
-      });
-      formRef.current?.reset();
-      setFileName('');
-    } else if (!state.success && state.message && state.message !== '') {
-      toast({
-        title: "Analysis Failed",
-        description: state.errors?._form?.[0] || state.message,
-        variant: "destructive",
-      });
+    if (isSubmitting) {
+        if (state.success && state.data) {
+          const newCandidate = state.data;
+          setCandidates(prev => [newCandidate, ...prev]);
+          setSelectedCandidate(newCandidate);
+          toast({
+            title: "Analysis Complete",
+            description: `${newCandidate.candidate.name}'s resume has been analyzed.`,
+            variant: "default",
+          });
+          formRef.current?.reset();
+          setFileName('');
+        } else if (!state.success && state.message && state.message !== '') {
+          toast({
+            title: "Analysis Failed",
+            description: state.errors?._form?.[0] || state.message,
+            variant: "destructive",
+          });
+        }
+        setIsSubmitting(false);
     }
-    setIsLoading(false);
-  }, [state, toast]);
+  }, [state, toast, isSubmitting]);
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const jobDesc = formData.get('jobDescription') as string;
     const resume = formData.get('resumeFile') as File;
     if (jobDesc && resume?.size > 0) {
-      setIsLoading(true);
+      setIsSubmitting(true);
       setSelectedCandidate(null);
+      formAction(formData);
+    } else {
+       // Handle client-side validation failure if needed
+        if (!jobDesc) {
+            toast({ title: "Job Description is required.", variant: "destructive" });
+        }
+        if (!resume || resume.size === 0) {
+            toast({ title: "Resume file is required.", variant: "destructive" });
+        }
     }
-    formAction(formData);
   };
   
   const clearHistory = () => {
@@ -164,7 +164,7 @@ export default function Home() {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    if (isSubmitting) {
       return <AnalysisLoading />;
     }
     if (selectedCandidate) {
@@ -178,52 +178,43 @@ export default function Home() {
   }
 
   return (
-     <SidebarProvider style={{ '--sidebar-width': '380px' } as React.CSSProperties}>
-      <Sidebar>
-        <div className="flex flex-col h-full bg-sidebar/80 backdrop-blur-xl border-r border-border/20">
-            <form ref={formRef} action={formAction} onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden">
-                <ScrollArea className="flex-1">
-                  <div className="p-4 space-y-6">
-                  <Card className='bg-card/30 backdrop-blur-lg border-primary/40'>
-                      <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><FileText size={18} /> Job Description</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                      <Label htmlFor="job-description" className="sr-only">Job Description</Label>
-                      <Textarea
-                          id="job-description"
-                          name="jobDescription"
-                          placeholder="Paste the job description here..."
-                          className="min-h-[200px] text-sm bg-background/50 border-border/50"
-                          required
-                      />
-                      {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
-                      </CardContent>
-                  </Card>
+     <div className="md:flex h-svh w-full">
+        <aside className="md:w-[380px] lg:w-[420px] shrink-0 h-full flex flex-col border-r bg-card">
+            <div className="p-4">
+                <Logo />
+            </div>
+            <Separator />
 
-                  <Card className='bg-card/30 backdrop-blur-lg border-primary/40'>
-                      <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><UploadCloud size={18} /> Resume Upload</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                      <Label htmlFor="resume-file" className="sr-only">Resume</Label>
-                      <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required/>
-                          <Button type="button" variant="outline" className="w-full bg-transparent hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
-                          {fileName ? <span className="truncate">{fileName}</span> : 'Select a file (PDF, DOCX)'}
-                          </Button>
-                      {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
-                      </CardContent>
-                  </Card>
-                  </div>
-                </ScrollArea>
-                <div className="p-4 border-t border-border/30 mt-auto sticky bottom-0 bg-sidebar/80 backdrop-blur-xl">
-                <SubmitButton />
+            <form ref={formRef} onSubmit={handleFormSubmit} className="flex flex-col flex-1 overflow-hidden p-4 space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
+                    <Textarea
+                        id="job-description"
+                        name="jobDescription"
+                        placeholder="Paste the job description here..."
+                        className="min-h-[150px] text-sm bg-background border-border/50"
+                        required
+                    />
+                    {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
+                    <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
+                    <Button type="button" variant="outline" className="w-full bg-background hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
+                        {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
+                    </Button>
+                    {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
+                </div>
+                 <div className="mt-auto pt-4">
+                    <SubmitButton />
                 </div>
             </form>
 
-            <div className="border-t border-border/30 flex-shrink-0">
-                <CardHeader className='flex-row items-center justify-between'>
-                    <CardTitle className="flex items-center gap-2"><Users size={18} /> Candidates</CardTitle>
+            <Separator />
+
+            <div className="flex-shrink-0">
+                <CardHeader className='flex-row items-center justify-between pb-2'>
+                    <CardTitle className="flex items-center gap-2 text-base"><Users size={18} /> Analysis History</CardTitle>
                     {candidates.length > 0 && (
                         <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
                             <Trash2 size={16}/>
@@ -231,7 +222,7 @@ export default function Home() {
                         </Button>
                     )}
                 </CardHeader>
-                <ScrollArea className="h-48 px-4 pb-4">
+                 <ScrollArea className="h-40 px-4 pb-4">
                 {candidates.length > 0 ? (
                     <ul className="space-y-2">
                         {candidates.map((c) => (
@@ -240,18 +231,16 @@ export default function Home() {
                                 onClick={() => setSelectedCandidate(c)}
                                 className={cn(
                                     "w-full text-left p-2 rounded-lg transition-colors flex items-center gap-3 group",
-                                    selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground" : "hover:bg-accent/50"
+                                    selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground" : "hover:bg-muted"
                                 )}>
-                                <Avatar className="h-9 w-9 border-2 border-transparent group-hover:border-primary/20">
-                                     <AvatarFallback className={cn("text-sm", selectedCandidate?.id === c.id ? "bg-primary-foreground text-primary" : "bg-muted/80")}>
-                                        {getInitials(c.candidate.name)}
-                                    </AvatarFallback>
-                                </Avatar>
                                 <div className="flex-1 overflow-hidden">
                                     <p className="font-semibold truncate">{c.candidate.name}</p>
                                     <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
                                 </div>
-                                <CircularProgress value={c.matchScore.matchScore} size={36} strokeWidth={4} />
+                                <div className={cn("flex items-center gap-1 font-semibold", getScoreColor(c.matchScore.matchScore))}>
+                                    <span>{(c.matchScore.matchScore / 10).toFixed(1)}</span>
+                                    <span className="text-xs text-muted-foreground">/10</span>
+                                </div>
                             </button>
                         </li>
                         ))}
@@ -261,7 +250,8 @@ export default function Home() {
                     )}
                 </ScrollArea>
             </div>
-            <SidebarFooter className="p-4 border-t border-border/30">
+             <Separator />
+            <div className="p-4 mt-auto">
                  <div className="flex items-center gap-3 mb-4">
                     <Avatar>
                         <AvatarImage src={user.photoURL ?? undefined} />
@@ -272,29 +262,19 @@ export default function Home() {
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                     </div>
                 </div>
-                <Button variant="outline" onClick={handleSignOut} className="w-full bg-transparent hover:bg-accent/50 border-border/50">
-                    <LogOut className="mr-2" />
+                <Button variant="outline" onClick={handleSignOut} className="w-full bg-transparent hover:bg-muted">
+                    <LogOut className="mr-2" size={16}/>
                     Sign Out
                 </Button>
-            </SidebarFooter>
-        </div>
-      </Sidebar>
-      <SidebarInset>
-        <div className='relative min-h-svh'>
-          <Image
-              src="https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop"
-              alt="Blurry office background"
-              fill
-              className="object-cover -z-10 filter blur-sm brightness-[.3]"
-          />
-          <Header />
-          <ScrollArea className="h-[calc(100vh-4rem)]">
-              <div className="p-6 lg:p-8">
-              {renderContent()}
-              </div>
-          </ScrollArea>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+            </div>
+        </aside>
+      <main className="flex-1 h-full overflow-y-auto">
+        <ScrollArea className="h-full">
+            <div className="p-6 lg:p-8">
+            {renderContent()}
+            </div>
+        </ScrollArea>
+      </main>
+    </div>
   );
 }
