@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -53,9 +52,9 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
        throw new Error('Could not parse resume. Please ensure the file is a valid resume (PDF, DOCX) and is not corrupted.');
     }
 
-    // 3. Generate match score
+    // 3. Generate match score and detailed analysis
     const resumeExperienceSummary = extractedInfo.summary || extractedInfo.experience.map(exp => `${exp.title} at ${exp.company}: ${exp.description}`).join('\n');
-    const matchScore = await generateResumeMatchScore({
+    const analysis = await generateResumeMatchScore({
       resumeSkills: extractedInfo.skills,
       resumeExperience: resumeExperienceSummary,
       jobDescription,
@@ -82,14 +81,14 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
         summary: extractedInfo.summary,
       },
       jobDescription,
-      matchScore: matchScore.matchScore,
+      overallScore: analysis.overallScore,
     });
 
     const result: AnalyzedCandidate = {
       id: crypto.randomUUID(),
       fileName: resumeFile.name,
       candidate: extractedInfo,
-      matchScore,
+      analysis,
       recommendations,
     };
 

@@ -5,13 +5,13 @@ import type {
 } from '@/ai/flows';
 
 export type Candidate = ExtractResumeInformationOutput;
-export type MatchScore = GenerateResumeMatchScoreOutput;
+export type AnalysisResult = GenerateResumeMatchScoreOutput;
 export type HiringRecommendations = GenerateHiringRecommendationsOutput;
 
 export type AnalyzedCandidate = {
   id: string;
   fileName: string;
   candidate: Candidate;
-  matchScore: MatchScore;
+  analysis: AnalysisResult;
   recommendations: HiringRecommendations;
 };

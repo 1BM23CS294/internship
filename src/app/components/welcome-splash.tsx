@@ -1,13 +1,23 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScanText } from "lucide-react";
+
 
 export function WelcomeSplash() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4 md:p-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mb-2">
-          AI Resume Analyzer
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Upload a resume and job description to get instant AI-powered feedback and a match score.
-        </p>
-    </div>
+     <Card className="bg-card/50 h-full flex flex-col items-center justify-center text-center min-h-[calc(100vh-10rem)] p-8">
+        <CardHeader>
+          <div className="p-4 bg-primary/10 rounded-full mx-auto w-fit">
+            <ScanText className="w-10 h-10 text-primary" />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <CardTitle className="text-3xl md:text-4xl font-bold tracking-tighter mb-2">
+            AI Resume Analyzer
+          </CardTitle>
+          <CardDescription className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
+            Upload a resume and job description to get instant AI-powered analysis, a detailed match score, and hiring recommendations.
+          </CardDescription>
+        </CardContent>
+    </Card>
   );
 }

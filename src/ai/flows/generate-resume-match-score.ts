@@ -18,17 +18,31 @@ const GenerateResumeMatchScoreInputSchema = z.object({
 });
 export type GenerateResumeMatchScoreInput = z.infer<typeof GenerateResumeMatchScoreInputSchema>;
 
+const PerformanceMetricSchema = z.object({
+  score: z.number().min(0).max(10).describe('The score for this metric, from 0 to 10.'),
+  explanation: z.string().describe('A brief explanation for the score.'),
+});
+
 const GenerateResumeMatchScoreOutputSchema = z.object({
-  matchScore: z
+  overallScore: z
     .number()
     .min(0)
-    .max(100)
-    .describe('A match score between 0 and 100, indicating how well the resume matches the job description.'),
+    .max(10)
+    .describe('An overall match score between 0 and 10, indicating how well the resume matches the job description.'),
+  rating: z.string().describe('A qualitative rating based on the score (e.g., "Excellent", "Good", "Needs Improvement").'),
   explanation: z
     .string()
-    .describe('A detailed explanation for the given match score, highlighting strengths and weaknesses.'),
+    .describe('A detailed explanation for the given overall score, highlighting strengths and weaknesses.'),
+  performanceMetrics: z.object({
+    formatting: PerformanceMetricSchema.describe('Assesses resume layout, readability, and professional presentation.'),
+    contentQuality: PerformanceMetricSchema.describe('Evaluates the clarity, impact, and relevance of the content, including action verbs and achievements.'),
+    atsCompatibility: PerformanceMetricSchema.describe('Scores how well the resume is optimized for Applicant Tracking Systems (ATS), based on standard formatting and keywords.'),
+    keywordUsage: PerformanceMetricSchema.describe('Measures the presence and relevance of keywords from the job description within the resume.'),
+    quantifiedResults: PerformanceMetricSchema.describe('Scores the use of numbers and data to demonstrate achievements and impact (e.g., "Increased sales by 20%").'),
+  }).describe('A detailed breakdown of performance metrics.'),
 });
 export type GenerateResumeMatchScoreOutput = z.infer<typeof GenerateResumeMatchScoreOutputSchema>;
+
 
 export async function generateResumeMatchScore(
   input: GenerateResumeMatchScoreInput
@@ -40,23 +54,34 @@ const prompt = ai.definePrompt({
   name: 'generateResumeMatchScorePrompt',
   input: {schema: GenerateResumeMatchScoreInputSchema},
   output: {schema: GenerateResumeMatchScoreOutputSchema},
-  prompt: `You are an expert HR recruiter assistant tasked with evaluating a candidate's suitability for a job based on their resume skills and experience against a given job description.
+  prompt: `You are an expert HR and recruitment analyst AI. Your task is to provide a comprehensive analysis of a candidate's resume against a given job description.
 
-Compare the provided resume skills and experience with the job description. Based on this comparison, generate a match score from 0 to 100, where 100 indicates a perfect match.
+Based on the resume skills, experience, and the job description, you must generate a detailed report in JSON format.
 
-Also, provide a detailed explanation for the generated match score, highlighting key strengths that align with the job requirements and areas where the candidate might be lacking.
+The report must include:
+1.  **overallScore**: A single, holistic score from 0 to 10 that represents the candidate's suitability for the role. 10 is a perfect match.
+2.  **rating**: A one-word qualitative rating based on the score (e.g., "Excellent", "Good", "Needs Improvement").
+3.  **explanation**: A concise summary explaining the rationale behind the overall score.
+4.  **performanceMetrics**: A detailed breakdown of the resume across five key areas. For each metric, provide a score from 0 to 10 and a brief explanation.
+    - **formatting**: Assess layout, readability, and professional presentation.
+    - **contentQuality**: Evaluate the clarity, impact, and relevance of the content, including the use of action verbs and achievements.
+    - **atsCompatibility**: Score how well the resume is optimized for Applicant Tracking Systems (ATS) based on standard formatting, structure, and keywords.
+    - **keywordUsage**: Measure how effectively the resume incorporates relevant keywords and phrases from the job description.
+    - **quantifiedResults**: Score the use of numbers, data, and metrics to demonstrate tangible achievements (e.g., "Increased revenue by 15%").
 
-Resume Skills:
+Here is the data to analyze:
+
+**Resume Skills:**
 {{#each resumeSkills}}- {{{this}}}
 {{/each}}
 
-Resume Experience:
+**Resume Experience Summary:**
 {{{resumeExperience}}}
 
-Job Description:
+**Job Description:**
 {{{jobDescription}}}
 
-Consider all aspects including required skills, years of experience, relevant duties, and any other implied requirements in the job description.`,
+Please provide your full analysis in the specified JSON format.`,
 });
 
 const generateResumeMatchScoreFlow = ai.defineFlow(
