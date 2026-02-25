@@ -24,7 +24,6 @@ import { signOut } from 'firebase/auth';
 import { Logo } from '@/components/logo';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackCard } from './components/feedback-card';
-import Image from 'next/image';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -193,13 +192,6 @@ export default function Home() {
 
   return (
      <div className="relative min-h-svh w-full p-4 md:p-6 lg:p-8">
-        <Image
-            src="https://storage.googleapis.com/aif-stg-testing-images/samir-hidevs-icon.png"
-            alt="Logo"
-            width={48}
-            height={48}
-            className="absolute top-6 right-8 z-20"
-        />
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 items-start'>
             <aside className="lg:col-span-1 space-y-8 sticky top-8">
                  <Card className="bg-card/20 backdrop-blur-sm border-primary/30">

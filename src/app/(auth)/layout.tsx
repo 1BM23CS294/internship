@@ -13,13 +13,6 @@ export default function AuthLayout({
             fill
             className="object-cover -z-10 filter blur-sm brightness-50"
         />
-        <Image
-            src="https://storage.googleapis.com/aif-stg-testing-images/samir-hidevs-icon.png"
-            alt="Logo"
-            width={48}
-            height={48}
-            className="absolute top-4 right-4 z-20"
-        />
         {children}
     </main>
   );
