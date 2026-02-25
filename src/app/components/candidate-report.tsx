@@ -42,7 +42,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-card/20 backdrop-blur-lg border-primary/10 p-2 sm:p-4">
+      <Card className="bg-card/10 backdrop-blur-md border-primary/20 p-2 sm:p-4">
         <CardHeader>
           <div className="flex flex-wrap justify-between items-start gap-4">
               <div>
@@ -61,7 +61,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
           </div>
         </CardHeader>
         <CardContent className='space-y-8'>
-            <Card className='bg-background/50 backdrop-blur-sm'>
+            <Card className='bg-background/20 backdrop-blur-sm border border-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl"><Award size={22} /> Overall Score</CardTitle>
                 </CardHeader>
@@ -80,7 +80,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
             </Card>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className='bg-background/50 backdrop-blur-sm'>
+                <Card className='bg-background/20 backdrop-blur-sm border border-primary/10'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-green-400"><CheckCircle2 size={20} /> Top Strengths</CardTitle>
                     </CardHeader>
@@ -90,7 +90,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                         </ul>
                     </CardContent>
                 </Card>
-                 <Card className='bg-background/50 backdrop-blur-sm'>
+                 <Card className='bg-background/20 backdrop-blur-sm border border-primary/10'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-amber-400"><ShieldAlert size={20} /> Areas for Improvement</CardTitle>
                     </CardHeader>
@@ -100,7 +100,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                         </ul>
                     </CardContent>
                 </Card>
-                <Card className='bg-background/50 backdrop-blur-sm md:col-span-2 lg:col-span-1'>
+                <Card className='bg-background/20 backdrop-blur-sm md:col-span-2 lg:col-span-1 border border-primary/10'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-red-400"><ListMinus size={20} /> Skills Gap</CardTitle>
                     </CardHeader>
@@ -112,7 +112,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </Card>
             </div>
 
-            <Card className='bg-background/50 backdrop-blur-sm'>
+            <Card className='bg-background/20 backdrop-blur-sm border border-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary"><BookCheck size={20} /> Performance Metrics</CardTitle>
                 </CardHeader>
