@@ -186,7 +186,7 @@ export default function Home() {
      <div className="min-h-svh w-full p-4 md:p-6 lg:p-8">
         <div className='grid grid-cols-1 lg:grid-cols-3 gap-8'>
             <div className="lg:col-span-1 space-y-8">
-                 <Card>
+                 <Card className="bg-card/60 backdrop-blur-lg border border-primary/10">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <Logo />
@@ -229,7 +229,7 @@ export default function Home() {
                         </form>
                     </CardContent>
                  </Card>
-                 <Card>
+                 <Card className="bg-card/60 backdrop-blur-lg border border-primary/10">
                     <CardHeader className='flex-row items-center justify-between pb-2'>
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
                         {candidates.length > 0 && (

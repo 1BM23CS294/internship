@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 export function AnalysisLoading() {
   return (
     <div className="space-y-6 animate-pulse">
-        <Card>
+        <Card className="bg-card/60 backdrop-blur-lg border-primary/10">
              <CardHeader>
                 <div className='flex justify-between items-center'>
                      <Skeleton className="h-6 w-48" />
@@ -22,7 +22,7 @@ export function AnalysisLoading() {
         </Card>
       
       <div className="grid md:grid-cols-2 gap-6">
-        <Card>
+        <Card className="bg-card/60 backdrop-blur-lg border-primary/10">
           <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
           <CardContent className="space-y-4">
             <Skeleton className="h-5 w-full" />
@@ -30,7 +30,7 @@ export function AnalysisLoading() {
             <Skeleton className="h-5 w-full" />
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card/60 backdrop-blur-lg border-primary/10">
           <CardHeader><Skeleton className="h-6 w-40" /></CardHeader>
           <CardContent className="space-y-4">
             <Skeleton className="h-5 w-full" />
@@ -40,7 +40,7 @@ export function AnalysisLoading() {
         </Card>
       </div>
 
-       <Card>
+       <Card className="bg-card/60 backdrop-blur-lg border-primary/10">
           <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
           <CardContent className="space-y-6">
             {[...Array(5)].map((_, i) => (
