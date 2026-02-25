@@ -24,7 +24,7 @@ import { signOut } from 'firebase/auth';
 import { Logo } from '@/components/logo';
 import { Badge } from '@/components/ui/badge';
 import { FeedbackCard } from './components/feedback-card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -81,6 +81,7 @@ export default function Home() {
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>()
   
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -171,6 +172,12 @@ export default function Home() {
     await signOut(auth);
     toast({ title: "Signed Out" });
   };
+  
+  const handleHistoryClick = (candidate: AnalyzedCandidate) => {
+      setSelectedCandidate(candidate);
+      carouselApi?.scrollTo(0);
+  };
+
 
   const renderContent = () => {
     if (isSubmitting) {
@@ -239,52 +246,9 @@ export default function Home() {
                         </form>
                     </CardContent>
                  </Card>
-                 <Card className="bg-card/20 backdrop-blur-sm border-primary/30">
-                    <CardHeader className='flex-row items-center justify-between pb-2'>
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
-                        {candidates.length > 0 && (
-                            <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                                <Trash2 size={16}/>
-                                <span className='sr-only'>Clear History</span>
-                            </Button>
-                        )}
-                    </CardHeader>
-                    <CardContent>
-                        <ScrollArea className="h-64">
-                        {candidates.length > 0 ? (
-                            <ul className="space-y-2">
-                                {candidates.map((c) => (
-                                <li key={c.id}>
-                                    <button
-                                        onClick={() => setSelectedCandidate(c)}
-                                        className={cn(
-                                            "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 group border",
-                                            selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
-                                        )}>
-                                        <div className="p-2 bg-muted rounded-md">
-                                           <ScanText className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
-                                        </div>
-                                        <div className="flex-1 overflow-hidden">
-                                            <p className="font-semibold truncate">{c.candidate.name}</p>
-                                            <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
-                                        </div>
-                                        <div className={cn("font-semibold text-lg", getScoreColor(c.analysis.overallScore))}>
-                                            <span>{c.analysis.overallScore.toFixed(0)}</span>
-                                            <span className="text-sm text-muted-foreground">/100</span>
-                                        </div>
-                                    </button>
-                                </li>
-                                ))}
-                            </ul>
-                            ) : (
-                            <p className="text-sm text-muted-foreground text-center py-10">Your analyzed candidates will appear here.</p>
-                            )}
-                        </ScrollArea>
-                    </CardContent>
-                 </Card>
             </div>
             <main className="lg:col-span-2">
-                <Carousel className="w-full h-full" opts={{ loop: true }}>
+                <Carousel className="w-full h-full" opts={{ loop: true }} setApi={setCarouselApi}>
                     <CarouselContent>
                         <CarouselItem>
                             {renderContent()}
@@ -304,6 +268,53 @@ export default function Home() {
                                         We value your feedback. Please let us know how we can improve.
                                     </CardDescription>
                                     <FeedbackCard />
+                                </CardContent>
+                            </Card>
+                        </CarouselItem>
+                         <CarouselItem>
+                             <Card className="h-full flex flex-col text-center min-h-[calc(100vh-10rem)] p-4 sm:p-8 bg-card/20 backdrop-blur-md border-primary/30">
+                                <CardHeader className='flex-row items-center justify-between pb-2 w-full'>
+                                    <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
+                                    {candidates.length > 0 && (
+                                        <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                                            <Trash2 size={16}/>
+                                            <span className='sr-only'>Clear History</span>
+                                        </Button>
+                                    )}
+                                </CardHeader>
+                                <CardContent className="w-full flex-1 overflow-hidden">
+                                     <ScrollArea className="h-full pr-4">
+                                    {candidates.length > 0 ? (
+                                        <ul className="space-y-2">
+                                            {candidates.map((c) => (
+                                            <li key={c.id}>
+                                                <button
+                                                    onClick={() => handleHistoryClick(c)}
+                                                    className={cn(
+                                                        "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 group border",
+                                                        selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
+                                                    )}>
+                                                    <div className="p-2 bg-muted rounded-md">
+                                                       <ScanText className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
+                                                    </div>
+                                                    <div className="flex-1 overflow-hidden">
+                                                        <p className="font-semibold truncate">{c.candidate.name}</p>
+                                                        <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
+                                                    </div>
+                                                    <div className={cn("font-semibold text-lg", getScoreColor(c.analysis.overallScore))}>
+                                                        <span>{c.analysis.overallScore.toFixed(0)}</span>
+                                                        <span className="text-sm text-muted-foreground">/100</span>
+                                                    </div>
+                                                </button>
+                                            </li>
+                                            ))}
+                                        </ul>
+                                        ) : (
+                                        <div className='h-full flex items-center justify-center'>
+                                            <p className="text-sm text-muted-foreground text-center py-10">Your analyzed candidates will appear here.</p>
+                                        </div>
+                                        )}
+                                    </ScrollArea>
                                 </CardContent>
                             </Card>
                         </CarouselItem>
