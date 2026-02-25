@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, ScanText } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, ScanText, Languages } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -22,6 +22,7 @@ import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
 import { Logo } from '@/components/logo';
+import { Badge } from '@/components/ui/badge';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -139,19 +140,21 @@ export default function Home() {
     const formData = new FormData(e.currentTarget);
     const jobDesc = formData.get('jobDescription') as string;
     const resume = formData.get('resumeFile') as File;
-    if (jobDesc && resume?.size > 0) {
-      setIsSubmitting(true);
-      setSelectedCandidate(null);
-      formAction(formData);
-    } else {
-       // Handle client-side validation failure if needed
+
+    if (!jobDesc || !resume || resume.size === 0) {
+       // Handle client-side validation failure
         if (!jobDesc) {
             toast({ title: "Job Description is required.", variant: "destructive" });
         }
         if (!resume || resume.size === 0) {
             toast({ title: "Resume file is required.", variant: "destructive" });
         }
+        return;
     }
+
+    setIsSubmitting(true);
+    setSelectedCandidate(null); 
+    formAction(formData);
   };
   
   const clearHistory = () => {
@@ -200,7 +203,13 @@ export default function Home() {
                                 </Button>
                             </div>
                         </div>
-                         <CardDescription>Upload a resume and job description to get instant AI-powered feedback.</CardDescription>
+                        <div className="pt-2 space-y-2">
+                          <CardDescription>Upload a resume and job description to get instant AI-powered feedback.</CardDescription>
+                          <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal">
+                              <Languages className="mr-2 h-4 w-4" />
+                              Now with Multi-Language Support
+                          </Badge>
+                        </div>
                     </CardHeader>
                     <CardContent>
                        <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
