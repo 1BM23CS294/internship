@@ -22,7 +22,6 @@ import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
 import { Logo } from '@/components/logo';
-import { Separator } from '@/components/ui/separator';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -63,8 +62,8 @@ function getInitials(name: string) {
 }
 
 const getScoreColor = (score: number) => {
-    if (score >= 8) return 'text-green-400';
-    if (score >= 6) return 'text-yellow-400';
+    if (score >= 80) return 'text-green-400';
+    if (score >= 60) return 'text-yellow-400';
     return 'text-red-400';
 };
 
@@ -261,7 +260,7 @@ export default function Home() {
                                         </div>
                                         <div className={cn("font-semibold text-lg", getScoreColor(c.analysis.overallScore))}>
                                             <span>{c.analysis.overallScore.toFixed(0)}</span>
-                                            <span className="text-sm text-muted-foreground">/10</span>
+                                            <span className="text-sm text-muted-foreground">/100</span>
                                         </div>
                                     </button>
                                 </li>

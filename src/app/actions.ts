@@ -76,7 +76,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
         education: extractedInfo.education.map(e => ({
           degree: e.degree,
           institution: e.institution,
-          graduationDate: e.year,
+          year: e.year,
         })),
         summary: extractedInfo.summary,
       },

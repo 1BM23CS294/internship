@@ -7,6 +7,8 @@ import {
   Award,
   BookCheck,
   BrainCircuit,
+  ListMinus,
+  Languages,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -47,7 +49,15 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                   <CardTitle className="text-2xl font-bold sm:text-3xl">{candidate.name}</CardTitle>
                   <CardDescription>Analysis based on file: {data.fileName}</CardDescription>
               </div>
-              <Badge variant="outline" className='text-sm border-primary/50 text-primary'>New Analysis</Badge>
+               <div className='flex flex-col items-end gap-2'>
+                 <Badge variant="outline" className='text-sm border-primary/50 text-primary'>New Analysis</Badge>
+                  {candidate.detectedLanguage && candidate.detectedLanguage.toLowerCase() !== 'english' && (
+                    <Badge variant="secondary" className="flex items-center gap-1.5">
+                      <Languages size={14} />
+                      Translated from {candidate.detectedLanguage}
+                    </Badge>
+                  )}
+               </div>
           </div>
         </CardHeader>
         <CardContent className='space-y-8'>
@@ -56,7 +66,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     <CardTitle className="flex items-center gap-2 text-primary text-xl"><Award size={22} /> Overall Score</CardTitle>
                 </CardHeader>
                 <CardContent className='flex flex-col md:flex-row items-center justify-center gap-8 text-center p-8'>
-                    <CircularProgress value={analysis.overallScore * 10} />
+                    <CircularProgress value={analysis.overallScore} />
                     <div className='max-w-md text-left space-y-2'>
                         <h3 className='text-xl font-bold text-foreground'>AI-Powered Analysis</h3>
                         <p className="text-base text-foreground/80">{analysis.explanation}</p>
@@ -69,7 +79,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </CardContent>
             </Card>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className='bg-card/50'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-green-400"><CheckCircle2 size={20} /> Top Strengths</CardTitle>
@@ -87,6 +97,16 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     <CardContent>
                          <ul className="list-disc pl-5 space-y-2 text-sm text-foreground/80">
                             {recommendations.weaknesses.map((w, i) => <li key={i}>{w}</li>)}
+                        </ul>
+                    </CardContent>
+                </Card>
+                <Card className='bg-card/50 md:col-span-2 lg:col-span-1'>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-red-400"><ListMinus size={20} /> Skills Gap</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                         <ul className="list-disc pl-5 space-y-2 text-sm text-foreground/80">
+                            {recommendations.skillsGap.length > 0 ? recommendations.skillsGap.map((w, i) => <li key={i}>{w}</li>) : <p className='text-sm text-muted-foreground'>No significant skill gaps found.</p>}
                         </ul>
                     </CardContent>
                 </Card>

@@ -27,8 +27,8 @@ const GenerateResumeMatchScoreOutputSchema = z.object({
   overallScore: z
     .number()
     .min(0)
-    .max(10)
-    .describe('An overall match score between 0 and 10, indicating how well the resume matches the job description.'),
+    .max(100)
+    .describe('An overall match score between 0 and 100, indicating how well the resume matches the job description.'),
   rating: z.string().describe('A qualitative rating based on the score (e.g., "Excellent", "Good", "Needs Improvement").'),
   explanation: z
     .string()
@@ -59,7 +59,7 @@ const prompt = ai.definePrompt({
 Based on the resume skills, experience, and the job description, you must generate a detailed report in JSON format.
 
 The report must include:
-1.  **overallScore**: A single, holistic score from 0 to 10 that represents the candidate's suitability for the role. 10 is a perfect match.
+1.  **overallScore**: A single, holistic score from 0 to 100 that represents the candidate's suitability for the role. 100 is a perfect match.
 2.  **rating**: A one-word qualitative rating based on the score (e.g., "Excellent", "Good", "Needs Improvement").
 3.  **explanation**: A concise summary explaining the rationale behind the overall score.
 4.  **performanceMetrics**: A detailed breakdown of the resume across five key areas. For each metric, provide a score from 0 to 10 and a brief explanation.

@@ -74,6 +74,11 @@ const ExtractResumeInformationOutputSchema = z.object({
     .describe(
       'A brief, high-level summary of the candidate based on the resume content.'
     ),
+  detectedLanguage: z
+    .string()
+    .describe(
+      'The detected language of the original resume (e.g., "Spanish", "English"). Return "English" if no translation was needed.'
+    ),
 });
 export type ExtractResumeInformationOutput = z.infer<
   typeof ExtractResumeInformationOutputSchema
@@ -90,7 +95,10 @@ const extractResumeInformationPrompt = ai.definePrompt({
   input: {schema: ExtractResumeInformationInputSchema},
   output: {schema: ExtractResumeInformationOutputSchema},
   prompt: `You are an expert resume parser. Your task is to accurately extract key information from the provided resume.
-The resume content is provided as an image/document. Analyze the document carefully and extract the following details into a structured JSON format:
+
+First, detect the language of the provided resume. If it is not in English, translate the entire resume to English before proceeding. Use the English version for the extraction.
+
+Then, analyze the document carefully and extract the following details into a structured JSON format:
 - Candidate's full name
 - Email address
 - Phone number (if available)
@@ -106,6 +114,7 @@ The resume content is provided as an image/document. Analyze the document carefu
     - Educational institution attended
     - Year of graduation or completion
 - A brief, high-level summary of the candidate based on the resume content (optional).
+- The detected language of the original resume. Return "English" if no translation was needed.
 
 Ensure all extracted information is accurate and structured precisely according to the output schema provided. If a field is not found, omit it or use an empty string/array as appropriate, especially for optional fields.
 
