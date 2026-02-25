@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, LogIn, UserCheck } from 'lucide-react';
+import { Loader2, Bot } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../ui/card';
 import { GoogleIcon } from './google-icon';
@@ -27,12 +27,12 @@ const content = {
   login: {
     title: 'Intelligent Resume Analyzer',
     description: 'Welcome back! Please sign in to continue.',
-    icon: LogIn,
+    icon: Bot,
   },
   signup: {
     title: 'Intelligent Resume Analyzer',
     description: 'Create an account to get started.',
-    icon: UserCheck,
+    icon: Bot,
   },
 };
 
@@ -134,7 +134,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <Card className="w-full max-w-md bg-card/50 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10">
+    <Card className="w-full max-w-md bg-card/50 backdrop-blur-2xl border-primary/20 shadow-2xl shadow-primary/10">
         <CardHeader className="text-center space-y-4">
             <Icon className="h-10 w-10 text-primary mx-auto" />
             <div>
