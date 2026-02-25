@@ -41,7 +41,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         <CardHeader>
           <div className="flex flex-wrap justify-between items-start gap-4">
               <div>
-                  <CardTitle className="text-2xl font-bold">{candidate.name}</CardTitle>
+                  <CardTitle className="text-xl font-bold sm:text-2xl">{candidate.name}</CardTitle>
                   <CardDescription>Analysis based on file: {data.fileName}</CardDescription>
               </div>
               <Badge variant="outline" className='text-sm border-primary/50 text-primary'>New Analysis</Badge>
@@ -53,13 +53,13 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     <CardTitle className="flex items-center gap-2 text-primary"><Award size={20} /> Overall Score</CardTitle>
                 </CardHeader>
                 <CardContent className='text-center flex flex-col items-center justify-center p-8 space-y-2'>
-                    <h2 className={cn("text-7xl font-bold tracking-tighter", getScoreColor(analysis.overallScore))}>
-                        {analysis.overallScore.toFixed(1)}<span className='text-4xl text-foreground/50'>/10</span>
+                    <h2 className={cn("text-6xl font-bold tracking-tighter sm:text-7xl", getScoreColor(analysis.overallScore))}>
+                        {analysis.overallScore.toFixed(1)}<span className='text-3xl text-foreground/50 sm:text-4xl'>/10</span>
                     </h2>
                     <Badge variant='secondary' className={cn("text-base", getScoreColor(analysis.overallScore))}>
                         {analysis.rating}
                     </Badge>
-                    <p className="text-sm text-foreground/60 max-w-md mx-auto pt-2">{analysis.explanation}</p>
+                    <p className="text-sm text-foreground/60 max-w-md mx-auto pt-2 sm:text-base">{analysis.explanation}</p>
                     <Progress value={analysis.overallScore * 10} className='max-w-md mt-2 h-3' indicatorClassName={getScoreColor(analysis.overallScore, true)} />
                 </CardContent>
             </Card>
