@@ -5,6 +5,7 @@ import {
   generateHiringRecommendations,
   generateResumeMatchScore,
   predictSalaryRange,
+  generateCareerPersonalityProfile,
 } from '@/ai/flows';
 import type { AnalyzedCandidate, SalaryPredictionResult } from '@/lib/types';
 import { z } from 'zod';
@@ -59,6 +60,8 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     }
     
     const resumeExperienceSummary = extractedInfo.summary || extractedInfo.experience.map(exp => `${exp.title} at ${exp.company}: ${exp.description}`).join('\n');
+    const resumeFullTextForProfiling = `${extractedInfo.summary || ''}\n\nSkills: ${extractedInfo.skills.join(', ')}\n\nExperience:\n${resumeExperienceSummary}`;
+
 
     // 3. Generate match score and detailed analysis
     const analysis = await generateResumeMatchScore({
@@ -111,6 +114,9 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
         };
     }
 
+    // 6. Generate Career Personality Profile
+    const personalityProfile = await generateCareerPersonalityProfile({ resumeSummary: resumeFullTextForProfiling });
+
 
     const result: AnalyzedCandidate = {
       id: crypto.randomUUID(),
@@ -119,6 +125,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
       analysis,
       recommendations,
       salaryPrediction,
+      personalityProfile,
     };
 
     return { success: true, message: 'Analysis complete.', data: result };

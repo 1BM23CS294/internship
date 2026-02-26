@@ -6,3 +6,4 @@ import '@/ai/flows/generate-resume-match-score.ts';
 import '@/ai/flows/extract-resume-information-flow.ts';
 import '@/ai/flows/generate-hiring-recommendations.ts';
 import '@/ai/flows/predict-salary-range.ts';
+import '@/ai/flows/generate-career-personality-profile.ts';

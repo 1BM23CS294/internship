@@ -14,6 +14,7 @@ import {
   Briefcase,
   DollarSign,
   TrendingUp,
+  UserCog,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -40,9 +41,17 @@ function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: s
 }
 
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
-  const { candidate, analysis, recommendations, salaryPrediction } = data;
+  const { candidate, analysis, recommendations, salaryPrediction, personalityProfile } = data;
   const performanceMetrics = analysis.performanceMetrics;
   const showSalaryTab = !!(salaryPrediction && salaryPrediction.predictedMinSalary > 0);
+  const showPersonalityTab = !!personalityProfile;
+
+  const getTabGridClass = () => {
+    let count = 4; // Overview, Performance, Recommendations, Details
+    if (showSalaryTab) count++;
+    if (showPersonalityTab) count++;
+    return `grid-cols-${count}`;
+  }
 
   return (
     <div className="w-full">
@@ -62,11 +71,16 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
            </div>
       </div>
         <Tabs defaultValue="overview" className="w-full" activationMode='manual'>
-            <TabsList className={cn("grid w-full bg-black/20", showSalaryTab ? "grid-cols-5" : "grid-cols-4")}>
+            <TabsList className={cn("grid w-full bg-black/20", 
+                showSalaryTab && showPersonalityTab ? "grid-cols-6" :
+                (showSalaryTab || showPersonalityTab) ? "grid-cols-5" :
+                "grid-cols-4"
+            )}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="recommendations">AI Insights</TabsTrigger>
                 {showSalaryTab && <TabsTrigger value="salary">Salary</TabsTrigger>}
+                {showPersonalityTab && <TabsTrigger value="personality">Personality</TabsTrigger>}
                 <TabsTrigger value="details">Resume Details</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-6">
@@ -169,6 +183,37 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                             <ul className="list-disc pl-5 space-y-2 text-sm text-foreground/80">
                                 {salaryPrediction.optimizationTips.map((tip, i) => <li key={i}>{tip}</li>)}
                             </ul>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>}
+            {showPersonalityTab && <TabsContent value="personality" className="mt-6">
+                <Card className='bg-black/20 border border-primary/20'>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                            <UserCog size={20} /> Career Personality Profile
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div className="text-center p-4 rounded-lg bg-black/20">
+                            <p className="text-sm text-muted-foreground">Primary Profile</p>
+                            <p className="text-2xl font-bold text-primary tracking-tight">
+                                {personalityProfile.primaryProfile}
+                            </p>
+                            <p className="text-sm text-muted-foreground mt-2">{personalityProfile.summary}</p>
+                        </div>
+                        
+                        <div className="space-y-4 pt-4">
+                            {personalityProfile.traits.map(trait => (
+                                <div key={trait.trait}>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <p className="text-sm font-medium">{trait.trait}</p>
+                                        <p className="text-sm font-semibold">{trait.score}/100</p>
+                                    </div>
+                                    <Progress value={trait.score} />
+                                    <p className='text-xs text-muted-foreground mt-1.5'>{trait.evidence}</p>
+                                </div>
+                            ))}
                         </div>
                     </CardContent>
                 </Card>

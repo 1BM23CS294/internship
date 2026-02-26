@@ -3,12 +3,14 @@ import type {
   GenerateHiringRecommendationsOutput,
   GenerateResumeMatchScoreOutput,
   PredictSalaryRangeOutput,
+  GenerateCareerPersonalityProfileOutput,
 } from '@/ai/flows';
 
 export type Candidate = ExtractResumeInformationOutput;
 export type AnalysisResult = GenerateResumeMatchScoreOutput;
 export type HiringRecommendations = GenerateHiringRecommendationsOutput;
 export type SalaryPredictionResult = PredictSalaryRangeOutput;
+export type CareerPersonalityProfile = GenerateCareerPersonalityProfileOutput;
 
 export type AnalyzedCandidate = {
   id: string;
@@ -17,4 +19,5 @@ export type AnalyzedCandidate = {
   analysis: AnalysisResult;
   recommendations: HiringRecommendations;
   salaryPrediction: SalaryPredictionResult;
+  personalityProfile: CareerPersonalityProfile;
 };
