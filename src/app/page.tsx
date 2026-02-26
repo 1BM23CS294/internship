@@ -106,6 +106,7 @@ export default function Home() {
   
   const isGuest = useMemo(() => user?.email && guestEmails.includes(user.email), [user, guestEmails]);
   const historyTitle = isGuest ? 'Public Analysis Feed' : 'Analysis History';
+  const isGuestListFull = useMemo(() => guestEmails.length >= 5, [guestEmails]);
 
   const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
@@ -223,6 +224,14 @@ export default function Home() {
   };
 
   const handleAddGuest = () => {
+    if (isGuestListFull) {
+        toast({
+            title: 'Guest List Full',
+            description: 'You can only have a maximum of 5 guests.',
+            variant: 'destructive',
+        });
+        return;
+    }
     if (newGuestEmail && !guestEmails.includes(newGuestEmail) && newGuestEmail.includes('@')) {
       if (!guestConfigRef) return;
       setDoc(guestConfigRef, { emails: arrayUnion(newGuestEmail) }, { merge: true })
@@ -489,20 +498,21 @@ export default function Home() {
                       <div className="flex gap-2">
                         <Input 
                           type="email" 
-                          placeholder="guest@example.com" 
+                          placeholder={isGuestListFull ? "Guest list is full" : "guest@example.com"}
                           value={newGuestEmail}
                           onChange={(e) => setNewGuestEmail(e.target.value)}
                           className="bg-black/20 border-border/50"
-                          disabled={isLoadingGuests}
+                          disabled={isLoadingGuests || isGuestListFull}
                         />
-                        <Button onClick={handleAddGuest} disabled={isLoadingGuests}>
+                        <Button onClick={handleAddGuest} disabled={isLoadingGuests || isGuestListFull}>
                           {isLoadingGuests && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                           Add Guest
                         </Button>
                       </div>
+                      {isGuestListFull && <p className="text-xs text-amber-500 mt-2">The guest list is full. A maximum of 5 guests are allowed.</p>}
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests</h4>
+                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests ({guestEmails.length}/5)</h4>
                       {isLoadingGuests ? (
                         <div className="space-y-2">
                           <Skeleton className="h-9 w-full" />

@@ -11,6 +11,7 @@
  *   allowing them to view all reports across all users. Guests cannot write any data.
  * - User Enumeration Prevention: Listing the top-level `/users` collection is
  *   disallowed.
+ * - Admin-Managed Guest List: The guest list is managed by a single administrator, limited to 5 guests.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -38,6 +39,15 @@ service cloud.firestore {
              guestData != null && 
              'emails' in guestData &&
              request.auth.token.email in guestData.emails;
+    }
+
+    /**
+     * Checks if the user is the designated administrator.
+     * The UID should be that of the primary application owner.
+     */
+    function isAdmin() {
+      // This is the UID of the admin user 'samir2061chaudhary@gmail.com'
+      return request.auth.uid == '6fJoWzavlLcBvfLzrT8dWXzygMg1';
     }
 
     function isExistingOwner(userId) {
@@ -106,9 +116,11 @@ service cloud.firestore {
     match /config/guests {
       // Any signed-in user can read the guest list.
       allow get: if isSignedIn();
-      // Only signed-in users who are NOT guests can write to the guest list.
-      // This prevents guests from promoting themselves or others.
-      allow create, update, write: if isSignedIn() && !isGuest();
+      // Only the designated admin can create or update the guest list.
+      // A maximum of 5 guests is allowed.
+      allow create, update: if isAdmin() && request.resource.data.emails.size() <= 5;
+      // Only the admin can delete the document (not recommended).
+      allow delete: if isAdmin();
     }
   }
 }
