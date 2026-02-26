@@ -143,18 +143,29 @@ service cloud.firestore {
 
     /**
      * @description Secures a user's collection of analysis reports.
-     *   Any signed-in user can read/list reports, but only the owner can write/delete them.
+     *   This rule block specifically handles write permissions, restricting them to the document owner.
+     *   Read and list permissions are handled by the broader collection group rule below.
      * @path /users/{userId}/analysisReports/{analysisReportId}
-     * @allow (get, list) Any authenticated user can view any analysis report.
      * @allow (create, update, delete) Only the owner of the document can modify it.
-     * @principle Allows for public discovery while maintaining data integrity.
+     * @principle Separates write-control from public read access.
      */
     match /users/{userId}/analysisReports/{analysisReportId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
+      // This rule only governs writes. Reads are handled by the collection group rule.
+      allow read: if false;
       allow create: if isOwner(userId) && isValidSubcollectionDocOnCreate(userId);
       allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
       allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Allows public read access to all analysis reports across all users.
+     * This enables the main public feed feature using a collection group query.
+     * @path /{path=**}/analysisReports/{reportId}
+     */
+    match /{path=**}/analysisReports/{reportId} {
+      allow get, list: if isSignedIn();
+      // Writes are explicitly denied here and handled by the more specific rule above.
+      allow write: if false;
     }
 
   }
