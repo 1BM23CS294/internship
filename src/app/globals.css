@@ -5,13 +5,13 @@
 
 @layer base {
   :root {
-    --background: 224 71% 4%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 224 71% 8%;
     --card-foreground: 210 40% 98%;
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
+    --primary: 200 100% 50%;
     --primary-foreground: 210 40% 98%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -21,11 +21,11 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
-    --border: 217 91% 25%;
+    --border: 200 100% 25%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 217 91% 60%;
+    --ring: 200 100% 50%;
     --radius: 0.5rem;
-    --chart-1: 217 91% 60%;
+    --chart-1: 200 100% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 40 80% 55%;
     --chart-4: 280 65% 60%;
@@ -33,13 +33,13 @@
   }
  
   .dark {
-    --background: 224 71% 4%;
+    --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     --card: 224 71% 8%;
     --card-foreground: 210 40% 98%;
     --popover: 224 71% 4%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217 91% 60%;
+    --primary: 200 100% 50%;
     --primary-foreground: 210 40% 98%;
     --secondary: 215 28% 17%;
     --secondary-foreground: 210 40% 98%;
@@ -49,9 +49,9 @@
     --accent-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 91% 25%;
+    --border: 200 100% 25%;
     --input: 215 28% 17%;
-    --ring: 217 91% 60%;
+    --ring: 200 100% 50%;
     --sidebar-background: 224 71.4% 10%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-border: 215 27.9% 16.9%;
@@ -67,7 +67,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    background-image: url('https://storage.googleapis.com/aif-stg-testing-images/e6f51c77-45e5-4f73-8984-91a32997c64c.png');
+    background-image: url('https://storage.googleapis.com/aif-stg-testing-images/f70a5996-5b7c-4c6e-8d8a-9d2011b953a1.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
