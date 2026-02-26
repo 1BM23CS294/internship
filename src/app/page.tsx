@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -14,6 +14,7 @@ import { CandidateReport } from './components/candidate-report';
 import { WelcomeSplash } from './components/welcome-splash';
 import { AnalysisLoading } from './components/analysis-loading';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -238,6 +239,13 @@ export default function Home() {
                                     {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
                                 </Button>
                                 {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
+                                <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground'>
+                                    <DollarSign size={16} />
+                                    Include Salary Prediction
+                                </Label>
                             </div>
                             <div className="pt-2">
                                 <SubmitButton />

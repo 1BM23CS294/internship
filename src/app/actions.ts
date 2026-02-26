@@ -6,12 +6,13 @@ import {
   generateResumeMatchScore,
   predictSalaryRange,
 } from '@/ai/flows';
-import type { AnalyzedCandidate } from '@/lib/types';
+import type { AnalyzedCandidate, SalaryPredictionResult } from '@/lib/types';
 import { z } from 'zod';
 
 const AnalyzeResumeSchema = z.object({
   jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
   resumeFile: z.instanceof(File).refine(file => file.size > 0, 'A resume file is required.').refine(file => file.size < 5 * 1024 * 1024, 'File size must be less than 5MB.'),
+  predictSalary: z.coerce.boolean().default(true),
 });
 
 type FormState = {
@@ -29,6 +30,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
   const validatedFields = AnalyzeResumeSchema.safeParse({
     jobDescription: formData.get('jobDescription'),
     resumeFile: formData.get('resumeFile'),
+    predictSalary: formData.get('predictSalary'),
   });
 
   if (!validatedFields.success) {
@@ -39,7 +41,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     };
   }
 
-  const { jobDescription, resumeFile } = validatedFields.data;
+  const { jobDescription, resumeFile, predictSalary } = validatedFields.data;
 
   try {
     // 1. Convert file to data URI
@@ -86,12 +88,24 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
       overallScore: analysis.overallScore,
     });
     
-    // 5. Predict Salary
-    const salaryPrediction = await predictSalaryRange({
-        jobDescription,
-        resumeSkills: extractedInfo.skills,
-        resumeExperience: resumeExperienceSummary,
-    });
+    // 5. Predict Salary (conditionally)
+    let salaryPrediction: SalaryPredictionResult;
+    if (predictSalary) {
+        salaryPrediction = await predictSalaryRange({
+            jobDescription,
+            resumeSkills: extractedInfo.skills,
+            resumeExperience: resumeExperienceSummary,
+        });
+    } else {
+        salaryPrediction = {
+            predictedMinSalary: 0,
+            predictedMaxSalary: 0,
+            currency: 'USD',
+            confidenceScore: 0,
+            explanation: 'Salary prediction was not requested.',
+            optimizationTips: [],
+        };
+    }
 
 
     const result: AnalyzedCandidate = {

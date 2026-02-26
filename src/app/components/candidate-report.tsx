@@ -42,6 +42,7 @@ function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: s
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
   const { candidate, analysis, recommendations, salaryPrediction } = data;
   const performanceMetrics = analysis.performanceMetrics;
+  const showSalaryTab = !!(salaryPrediction && salaryPrediction.predictedMinSalary > 0);
 
   return (
     <div className="w-full">
@@ -60,12 +61,12 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
               )}
            </div>
       </div>
-        <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 bg-black/20">
+        <Tabs defaultValue="overview" className="w-full" activationMode='manual'>
+            <TabsList className={cn("grid w-full bg-black/20", showSalaryTab ? "grid-cols-5" : "grid-cols-4")}>
                 <TabsTrigger value="overview">Overview</TabsTrigger>
                 <TabsTrigger value="performance">Performance</TabsTrigger>
                 <TabsTrigger value="recommendations">AI Insights</TabsTrigger>
-                <TabsTrigger value="salary">Salary</TabsTrigger>
+                {showSalaryTab && <TabsTrigger value="salary">Salary</TabsTrigger>}
                 <TabsTrigger value="details">Resume Details</TabsTrigger>
             </TabsList>
             <TabsContent value="overview" className="mt-6">
@@ -136,7 +137,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </Card>
             </div>
             </TabsContent>
-             <TabsContent value="salary" className="mt-6">
+             {showSalaryTab && <TabsContent value="salary" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-primary">
@@ -171,7 +172,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                         </div>
                     </CardContent>
                 </Card>
-            </TabsContent>
+            </TabsContent>}
             <TabsContent value="details" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>
                 <CardHeader>
