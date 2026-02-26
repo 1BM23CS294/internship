@@ -96,22 +96,32 @@ export default function Home() {
 
   const guestConfigRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    // This is the single document that holds the configuration.
     return doc(firestore, 'config', 'guests');
   }, [firestore]);
 
   const { data: guestConfigDoc, isLoading: isLoadingGuests } = useDoc(guestConfigRef);
 
-  const guestEmails = useMemo(() => Object.keys(guestConfigDoc?.emails || {}), [guestConfigDoc]);
+  // isGuest can be true, false, or undefined if the status isn't determined yet.
+  const isGuest = useMemo(() => {
+    // Undefined means we don't know yet.
+    if (isUserLoading || isLoadingGuests) {
+      return undefined;
+    }
+    // False means we know they are not a guest.
+    if (!user?.email || !guestConfigDoc?.emails) {
+      return false;
+    }
+    // True means we know they are a guest.
+    return Object.keys(guestConfigDoc.emails).includes(user.email);
+  }, [user, isUserLoading, guestConfigDoc, isLoadingGuests]);
   
-  const isGuest = useMemo(() => user?.email && guestEmails.includes(user.email), [user, guestEmails]);
   const historyTitle = isGuest ? 'Public Analysis Feed' : 'Analysis History';
-  const isGuestListFull = useMemo(() => guestEmails.length >= 5, [guestEmails]);
+  const isGuestListFull = useMemo(() => (guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails).length >= 5 : false), [guestConfigDoc]);
 
   const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
   const reportsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+    if (!user || !firestore || isGuest === undefined) return null;
     
     if (isGuest) {
         return query(collectionGroup(firestore, 'analysisReports'), orderBy('createdAt', 'desc'));
@@ -127,7 +137,6 @@ export default function Home() {
     if (!savedReports) return [];
     return savedReports.map(report => {
       const data = JSON.parse(report.reportJson);
-      // The report object from a collectionGroup query won't have a top-level `id` from `doc.id`, so we use the id from the parsed data.
       return { ...data, firestoreId: report.id, userId: report.userId };
     });
   }, [savedReports]);
@@ -232,7 +241,8 @@ export default function Home() {
         });
         return;
     }
-    if (newGuestEmail && !guestEmails.includes(newGuestEmail) && newGuestEmail.includes('@')) {
+    const currentGuestEmails = guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails) : [];
+    if (newGuestEmail && !currentGuestEmails.includes(newGuestEmail) && newGuestEmail.includes('@')) {
       if (!guestConfigRef) return;
       setDoc(guestConfigRef, { emails: { [newGuestEmail]: true } }, { merge: true })
         .catch(() => {
@@ -323,84 +333,84 @@ export default function Home() {
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow pt-6">
-                        {!isGuest ? (
-                        <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
-                           <div className={cn("space-y-4", step !== 1 && "hidden")}>
-                                <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
-                                <div className="space-y-2">
-                                    <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
-                                    <Textarea id="job-description" name="jobDescription" placeholder="Paste the job description here..." className="min-h-[120px] bg-black/20 border-border/50" required />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
-                                        <Input id="resume-file" name="resumeFile" type="file" onChange={(e) => setResumeFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
-                                        <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
-                                            {resumeFileName ? <span className="truncate text-primary">{resumeFileName}</span> : 'Select a resume file...'}
-                                        </Button>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
-                                        <Select name="country" required onValueChange={setSelectedCountry}>
-                                            <SelectTrigger className="w-full bg-black/20 border-border/50"><SelectValue placeholder="Select a country..." /></SelectTrigger>
-                                            <SelectContent>{countries.map(country => (<SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>))}</SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                           </div>
-
-                           <div className={cn("space-y-6", step !== 2 && "hidden")}>
-                              <h2 className='text-lg font-semibold text-primary'>Step 2: Advanced Analysis</h2>
-                              
-                              <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
-                                <Label className='flex items-center gap-2 text-base'><Video size={18} /> AI Video Feedback <Badge variant="secondary" className="ml-2">Beta</Badge></Label>
-                                <p className='text-sm text-muted-foreground'>Upload a video resume to get feedback on facial expressions, voice confidence, and more. (Optional, up to 50MB)</p>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="analyze-video" name="analyzeVideo" />
-                                    <Label htmlFor="analyze-video" className='text-muted-foreground grow'>Enable Video Analysis</Label>
-                                </div>
-                                 <Input id="video-file" name="videoFile" type="file" onChange={(e) => setVideoFileName(e.target.files?.[0]?.name || '')} className="hidden" accept="video/*"/>
-                                  <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
-                                      {videoFileName ? <span className="truncate text-primary">{videoFileName}</span> : 'Select a video file...'}
-                                  </Button>
-                              </div>
-                              
-                               <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
-                                <Label className='flex items-center gap-2 text-base'><Lightbulb size={18} /> Additional Insights</Label>
-                                <p className='text-sm text-muted-foreground'>Select additional AI-powered reports to generate.</p>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
-                                    <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground grow'>
-                                        <DollarSign size={16} />
-                                        <span>Salary Prediction</span>
-                                        {selectedCurrency && (<Badge variant="outline" className="border-primary/50 text-primary/90 font-normal ml-auto">{selectedCurrency}</Badge>)}
-                                    </Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="predict-work-life" name="predictWorkLife" defaultChecked={true} />
-                                    <Label htmlFor="predict-work-life" className='flex items-center gap-2 text-muted-foreground grow'><Clock size={16} />Work-Life Balance Predictor</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="find-networking" name="findNetworking" defaultChecked={true} />
-                                    <Label htmlFor="find-networking" className='flex items-center gap-2 text-muted-foreground grow'><Users size={16} />Networking Opportunity Finder</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="rewrite-resume" name="rewriteResume" defaultChecked={true} />
-                                    <Label htmlFor="rewrite-resume" className='flex items-center gap-2 text-muted-foreground grow'><PenSquare size={16} />Resume Rewriter</Label>
-                                </div>
-                              </div>
-                           </div>
-                            <Separator/>
-                            <div className="pt-2 flex gap-4">
-                                {step === 2 && (
-                                    <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
-                                        <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                                    </Button>
-                                )}
-                                <SubmitButton isSubmitting={isSubmitting} step={step} setStep={setStep} />
+                        {isGuest === false ? (
+                          <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
+                            <div className={cn("space-y-4", step !== 1 && "hidden")}>
+                                  <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
+                                  <div className="space-y-2">
+                                      <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
+                                      <Textarea id="job-description" name="jobDescription" placeholder="Paste the job description here..." className="min-h-[120px] bg-black/20 border-border/50" required />
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div className="space-y-2">
+                                          <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
+                                          <Input id="resume-file" name="resumeFile" type="file" onChange={(e) => setResumeFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
+                                          <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
+                                              {resumeFileName ? <span className="truncate text-primary">{resumeFileName}</span> : 'Select a resume file...'}
+                                          </Button>
+                                      </div>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
+                                          <Select name="country" required onValueChange={setSelectedCountry}>
+                                              <SelectTrigger className="w-full bg-black/20 border-border/50"><SelectValue placeholder="Select a country..." /></SelectTrigger>
+                                              <SelectContent>{countries.map(country => (<SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>))}</SelectContent>
+                                          </Select>
+                                      </div>
+                                  </div>
                             </div>
-                        </form>
-                        ) : (
+
+                            <div className={cn("space-y-6", step !== 2 && "hidden")}>
+                                <h2 className='text-lg font-semibold text-primary'>Step 2: Advanced Analysis</h2>
+                                
+                                <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
+                                  <Label className='flex items-center gap-2 text-base'><Video size={18} /> AI Video Feedback <Badge variant="secondary" className="ml-2">Beta</Badge></Label>
+                                  <p className='text-sm text-muted-foreground'>Upload a video resume to get feedback on facial expressions, voice confidence, and more. (Optional, up to 50MB)</p>
+                                  <div className="flex items-center space-x-2">
+                                      <Checkbox id="analyze-video" name="analyzeVideo" />
+                                      <Label htmlFor="analyze-video" className='text-muted-foreground grow'>Enable Video Analysis</Label>
+                                  </div>
+                                  <Input id="video-file" name="videoFile" type="file" onChange={(e) => setVideoFileName(e.target.files?.[0]?.name || '')} className="hidden" accept="video/*"/>
+                                    <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
+                                        {videoFileName ? <span className="truncate text-primary">{videoFileName}</span> : 'Select a video file...'}
+                                    </Button>
+                                </div>
+                                
+                                <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
+                                  <Label className='flex items-center gap-2 text-base'><Lightbulb size={18} /> Additional Insights</Label>
+                                  <p className='text-sm text-muted-foreground'>Select additional AI-powered reports to generate.</p>
+                                  <div className="flex items-center space-x-2">
+                                      <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
+                                      <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground grow'>
+                                          <DollarSign size={16} />
+                                          <span>Salary Prediction</span>
+                                          {selectedCurrency && (<Badge variant="outline" className="border-primary/50 text-primary/90 font-normal ml-auto">{selectedCurrency}</Badge>)}
+                                      </Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                      <Checkbox id="predict-work-life" name="predictWorkLife" defaultChecked={true} />
+                                      <Label htmlFor="predict-work-life" className='flex items-center gap-2 text-muted-foreground grow'><Clock size={16} />Work-Life Balance Predictor</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                      <Checkbox id="find-networking" name="findNetworking" defaultChecked={true} />
+                                      <Label htmlFor="find-networking" className='flex items-center gap-2 text-muted-foreground grow'><Users size={16} />Networking Opportunity Finder</Label>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                      <Checkbox id="rewrite-resume" name="rewriteResume" defaultChecked={true} />
+                                      <Label htmlFor="rewrite-resume" className='flex items-center gap-2 text-muted-foreground grow'><PenSquare size={16} />Resume Rewriter</Label>
+                                  </div>
+                                </div>
+                            </div>
+                              <Separator/>
+                              <div className="pt-2 flex gap-4">
+                                  {step === 2 && (
+                                      <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
+                                          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                                      </Button>
+                                  )}
+                                  <SubmitButton isSubmitting={isSubmitting} step={step} setStep={setStep} />
+                              </div>
+                          </form>
+                        ) : isGuest === true ? (
                           <div className="flex flex-col items-center justify-center text-center h-full p-8">
                             <Eye className="w-16 h-16 text-primary/50 mb-4" />
                             <h3 className="text-xl font-semibold">Guest Mode</h3>
@@ -408,6 +418,11 @@ export default function Home() {
                               You are viewing in read-only mode. You can browse all public analysis reports but cannot submit new ones.
                             </p>
                           </div>
+                        ) : (
+                           <div className="flex flex-col items-center justify-center text-center h-full p-8">
+                                <Loader2 className="w-12 h-12 text-primary/50 mb-4 animate-spin" />
+                                <h3 className="text-xl font-semibold">Verifying Access...</h3>
+                           </div>
                         )}
                     </CardContent>
                 </Card>
@@ -418,7 +433,7 @@ export default function Home() {
                     </CardHeader>
                     <CardContent className="w-full flex-grow overflow-hidden">
                         <ScrollArea className="h-full pr-4 max-h-[500px]">
-                        {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
+                        {(isLoadingReports || isGuest === undefined) ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
                             <div className='h-full flex flex-col items-center justify-center text-center p-4 text-destructive'>
                                 <p className="text-sm font-semibold">Error Loading Feed</p>
                                 <p className="text-xs break-words">{reportsError.message}</p>
@@ -485,7 +500,7 @@ export default function Home() {
               <HowToUse />
             </div>
             
-            {!isGuest && (
+            {isGuest === false && (
             <div>
               <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
                 <CardHeader>
@@ -517,15 +532,15 @@ export default function Home() {
                       {isGuestListFull && <p className="text-xs text-amber-500 mt-2">The guest list is full. A maximum of 5 guests are allowed.</p>}
                     </div>
                     <div>
-                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests ({guestEmails.length}/5)</h4>
+                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests ({guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails).length : 0}/5)</h4>
                       {isLoadingGuests ? (
                         <div className="space-y-2">
                           <Skeleton className="h-9 w-full" />
                           <Skeleton className="h-9 w-full" />
                         </div>
-                      ) : guestEmails.length > 0 ? (
+                      ) : guestConfigDoc?.emails && Object.keys(guestConfigDoc.emails).length > 0 ? (
                         <ul className="space-y-2">
-                          {guestEmails.map(email => (
+                          {Object.keys(guestConfigDoc.emails).map(email => (
                             <li key={email} className="flex items-center justify-between p-2 rounded-md bg-black/20">
                               <span className="text-sm text-foreground/80">{email}</span>
                               <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveGuest(email)}>
