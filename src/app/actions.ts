@@ -129,7 +129,14 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     const analysisPromises = [
         // Core analyses
         generateResumeMatchScore({ resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, jobDescription }),
-        generateHiringRecommendations({ parsedResume: { ...extractedInfo }, jobDescription, overallScore: 0 }),
+        generateHiringRecommendations({ parsedResume: {
+            name: extractedInfo.name,
+            email: extractedInfo.email,
+            skills: extractedInfo.skills,
+            experience: extractedInfo.experience,
+            education: extractedInfo.education,
+            summary: extractedInfo.summary,
+        }, jobDescription, overallScore: 0 }),
         generateCareerPersonalityProfile({ resumeSummary: resumeFullTextForProfiling }),
         
         // Original optional analyses
