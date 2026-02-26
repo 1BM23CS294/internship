@@ -71,7 +71,6 @@ export default function Home() {
   const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
   const [fileName, setFileName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAutoplayActive, setIsAutoplayActive] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -207,125 +206,119 @@ export default function Home() {
             opts={{
                 loop: true,
             }}
-            plugins={isAutoplayActive ? [autoplayPlugin.current] : []}
-            className="w-full max-w-7xl"
+            plugins={[autoplayPlugin.current]}
+            className="w-full max-w-4xl"
         >
             <CarouselContent className="h-[740px]">
-                <CarouselItem>
-                   <div className="p-1 h-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <Card className="h-full bg-card/20 border-primary/30 flex flex-col overflow-hidden">
-                            <CardContent className="p-0 flex-grow">
-                                <ScrollArea className="h-full w-full p-6">
-                                    {renderMainPanelContent()}
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
-                        <div className="h-full">
-                            <Card className="h-full bg-card/20 border-primary/30 flex flex-col">
-                                <CardHeader className="bg-black/30 rounded-t-lg">
-                                    <div className="flex items-center justify-between">
-                                        <h1 className="text-xl font-bold">Intelligent Resume Analyzer</h1>
-                                        <div className="flex items-center gap-2">
-                                            <Avatar className="h-8 w-8">
-                                                <AvatarImage src={user.photoURL ?? undefined} />
-                                                <AvatarFallback>{getInitials(user.displayName || user.email || 'U')}</AvatarFallback>
-                                            </Avatar>
-                                            <Button variant="ghost" size="icon" onClick={handleSignOut} className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                                                <LogOut size={16}/>
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <div className="pt-2 space-y-2">
-                                    <CardDescription>Upload a resume and job description to get instant AI-powered feedback.</CardDescription>
-                                    <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal">
-                                        <Languages className="mr-2 h-4 w-4" />
-                                        Now with Multi-Language Support
-                                    </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="flex-grow pt-6">
-                                <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
-                                            <Textarea
-                                                id="job-description"
-                                                name="jobDescription"
-                                                placeholder="Paste the job description here..."
-                                                className="min-h-[150px] bg-background border-border/50"
-                                                required
-                                            />
-                                            {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
-                                            <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
-                                            <Button type="button" variant="outline" className="w-full bg-background hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
-                                                {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
-                                            </Button>
-                                            {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
-                                        </div>
-                                        <div className="pt-2">
-                                            <SubmitButton />
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </div>
+                <CarouselItem className="p-1 h-full">
+                   <Card className="h-full bg-card/20 border-primary/30 flex flex-col overflow-hidden">
+                        <CardContent className="p-0 flex-grow">
+                            <ScrollArea className="h-full w-full p-6">
+                                {renderMainPanelContent()}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
                 </CarouselItem>
-                <CarouselItem>
-                     <div className="p-1 h-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="h-full">
-                            <Card className="h-full bg-card/20 border-primary/30 flex flex-col">
-                                <CardHeader className='flex-row items-center justify-between pb-2 w-full'>
-                                    <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
-                                    {candidates.length > 0 && (
-                                        <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
-                                            <Trash2 size={16}/>
-                                            <span className='sr-only'>Clear History</span>
-                                        </Button>
-                                    )}
-                                </CardHeader>
-                                <CardContent className="w-full flex-grow overflow-hidden">
-                                    <ScrollArea className="h-full pr-4">
-                                    {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : candidates.length > 0 ? (
-                                        <ul className="space-y-2">
-                                            {candidates.map((c) => (
-                                            <li key={c.id}>
-                                                <button
-                                                    onClick={() => handleHistoryClick(c)}
-                                                    className={cn(
-                                                        "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 group border",
-                                                        selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
-                                                    )}>
-                                                    <div className="p-2 bg-muted rounded-md">
-                                                    <Bot className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
-                                                    </div>
-                                                    <div className="flex-1 overflow-hidden">
-                                                        <p className="font-semibold truncate">{c.candidate.name}</p>
-                                                        <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
-                                                    </div>
-                                                    <div className={cn("font-semibold text-lg", getScoreStyling(c.analysis.overallScore).color)}>
-                                                        <span>{c.analysis.overallScore.toFixed(0)}</span>
-                                                        <span className="text-sm text-muted-foreground">/100</span>
-                                                    </div>
-                                                </button>
-                                            </li>
-                                            ))}
-                                        </ul>
-                                        ) : (
-                                        <div className='h-full flex flex-col items-center justify-center text-center'>
-                                            <p className="text-sm text-muted-foreground">Your analyzed candidates will appear here.</p>
-                                        </div>
-                                        )}
-                                    </ScrollArea>
-                                </CardContent>
-                            </Card>
-                        </div>
-                        <div className="h-full">
-                            <FeedbackCard className="h-full" />
-                        </div>
-                    </div>
+                <CarouselItem className="p-1 h-full">
+                    <Card className="h-full bg-card/20 border-primary/30 flex flex-col">
+                        <CardHeader className="bg-black/30 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-xl font-bold">Intelligent Resume Analyzer</h1>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={user.photoURL ?? undefined} />
+                                        <AvatarFallback>{getInitials(user.displayName || user.email || 'U')}</AvatarFallback>
+                                    </Avatar>
+                                    <Button variant="ghost" size="icon" onClick={handleSignOut} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                        <LogOut size={16}/>
+                                    </Button>
+                                </div>
+                            </div>
+                            <div className="pt-2 space-y-2">
+                            <CardDescription>Upload a resume and job description to get instant AI-powered feedback.</CardDescription>
+                            <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal">
+                                <Languages className="mr-2 h-4 w-4" />
+                                Now with Multi-Language Support
+                            </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow pt-6">
+                        <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
+                                    <Textarea
+                                        id="job-description"
+                                        name="jobDescription"
+                                        placeholder="Paste the job description here..."
+                                        className="min-h-[150px] bg-background border-border/50"
+                                        required
+                                    />
+                                    {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
+                                    <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
+                                    <Button type="button" variant="outline" className="w-full bg-background hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
+                                        {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
+                                    </Button>
+                                    {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
+                                </div>
+                                <div className="pt-2">
+                                    <SubmitButton />
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </CarouselItem>
+                <CarouselItem className="p-1 h-full">
+                    <Card className="h-full bg-card/20 border-primary/30 flex flex-col">
+                        <CardHeader className='flex-row items-center justify-between pb-2 w-full'>
+                            <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
+                            {candidates.length > 0 && (
+                                <Button variant="ghost" size="icon" onClick={clearHistory} className="h-7 w-7 text-muted-foreground hover:text-destructive">
+                                    <Trash2 size={16}/>
+                                    <span className='sr-only'>Clear History</span>
+                                </Button>
+                            )}
+                        </CardHeader>
+                        <CardContent className="w-full flex-grow overflow-hidden">
+                            <ScrollArea className="h-full pr-4">
+                            {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : candidates.length > 0 ? (
+                                <ul className="space-y-2">
+                                    {candidates.map((c) => (
+                                    <li key={c.id}>
+                                        <button
+                                            onClick={() => handleHistoryClick(c)}
+                                            className={cn(
+                                                "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 group border",
+                                                selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
+                                            )}>
+                                            <div className="p-2 bg-muted rounded-md">
+                                            <Bot className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <p className="font-semibold truncate">{c.candidate.name}</p>
+                                                <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
+                                            </div>
+                                            <div className={cn("font-semibold text-lg", getScoreStyling(c.analysis.overallScore).color)}>
+                                                <span>{c.analysis.overallScore.toFixed(0)}</span>
+                                                <span className="text-sm text-muted-foreground">/100</span>
+                                            </div>
+                                        </button>
+                                    </li>
+                                    ))}
+                                </ul>
+                                ) : (
+                                <div className='h-full flex flex-col items-center justify-center text-center'>
+                                    <p className="text-sm text-muted-foreground">Your analyzed candidates will appear here.</p>
+                                </div>
+                                )}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </CarouselItem>
+                <CarouselItem className="p-1 h-full">
+                    <FeedbackCard className="h-full" />
                 </CarouselItem>
             </CarouselContent>
             <CarouselPrevious />
