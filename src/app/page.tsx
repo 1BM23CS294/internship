@@ -22,7 +22,7 @@ import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase } from '
 import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, collectionGroup } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { getScoreStyling } from '@/lib/theme';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -95,9 +95,9 @@ export default function Home() {
   const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
   const reportsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return query(collectionGroup(firestore, 'analysisReports'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'analysisReports'), orderBy('createdAt', 'desc'));
+  }, [firestore, user]);
 
   const { data: savedReports, isLoading: isLoadingReports } = useCollection(reportsQuery);
 
@@ -319,7 +319,7 @@ export default function Home() {
 
                 <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col">
                     <CardHeader className='flex-row items-center justify-between pb-4'>
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Public Analyses</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
                     </CardHeader>
                     <CardContent className="w-full flex-grow overflow-hidden">
                         <ScrollArea className="h-full pr-4 max-h-[500px]">
@@ -363,7 +363,7 @@ export default function Home() {
                             </ul>
                             ) : (
                             <div className='h-full flex flex-col items-center justify-center text-center p-4'>
-                                <p className="text-sm text-muted-foreground">No public analyses yet. Be the first!</p>
+                                <p className="text-sm text-muted-foreground">Your past analyses will appear here.</p>
                             </div>
                             )}
                         </ScrollArea>
