@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { countries } from '@/lib/countries';
 import { Separator } from '@/components/ui/separator';
 import { HowToUse } from './components/how-to-use';
-import { guestEmails } from '@/lib/guest-config';
+import { guestEmails as initialGuestEmails } from '@/lib/guest-config';
 
 function SubmitButton({ isSubmitting, step, setStep }: { isSubmitting: boolean; step: number; setStep: (step: number) => void; }) {
   const { pending } = useFormStatus();
@@ -85,6 +85,8 @@ export default function Home() {
   const [videoFileName, setVideoFileName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [guestEmails, setGuestEmails] = useState(initialGuestEmails);
+  const [newGuestEmail, setNewGuestEmail] = useState('');
 
   const formRef = useRef<HTMLFormElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null); 
@@ -93,7 +95,7 @@ export default function Home() {
   const auth = useAuth();
   const firestore = useFirestore();
 
-  const isGuest = useMemo(() => user?.email && guestEmails.includes(user.email), [user]);
+  const isGuest = useMemo(() => user?.email && guestEmails.includes(user.email), [user, guestEmails]);
   const historyTitle = isGuest ? 'Public Analysis Feed' : 'Analysis History';
 
   const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
@@ -209,6 +211,31 @@ export default function Home() {
   const handleHistoryClick = (candidate: AnalyzedCandidate) => {
       setSelectedCandidate(candidate);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  const handleAddGuest = () => {
+    if (newGuestEmail && !guestEmails.includes(newGuestEmail) && newGuestEmail.includes('@')) {
+      setGuestEmails([...guestEmails, newGuestEmail]);
+      setNewGuestEmail('');
+      toast({
+        title: 'Guest Added (UI Demo)',
+        description: 'To make this change permanent, please ask me to update the configuration.',
+      });
+    } else {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid, unique email address.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRemoveGuest = (emailToRemove: string) => {
+    setGuestEmails(guestEmails.filter(email => email !== emailToRemove));
+    toast({
+      title: 'Guest Removed (UI Demo)',
+      description: 'To make this change permanent, please ask me to update the configuration.',
+    });
   };
 
   const renderMainPanelContent = () => {
@@ -428,18 +455,42 @@ export default function Home() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests</h4>
-                  {guestEmails.length > 0 ? (
-                    <ul className="list-disc pl-5 space-y-1 text-sm text-foreground/80">
-                      {guestEmails.map(email => <li key={email}>{email}</li>)}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">There are currently no guest users.</p>
-                  )}
-                  <Separator className="my-4" />
-                  <p className="text-xs text-muted-foreground">
-                    To add or remove a guest, you must request a change from the site administrator to update the guest list.
-                  </p>
+                   <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2 text-muted-foreground">Manage Guest List</h4>
+                      <div className="flex gap-2">
+                        <Input 
+                          type="email" 
+                          placeholder="guest@example.com" 
+                          value={newGuestEmail}
+                          onChange={(e) => setNewGuestEmail(e.target.value)}
+                          className="bg-black/20 border-border/50"
+                        />
+                        <Button onClick={handleAddGuest}>Add Guest</Button>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests</h4>
+                      {guestEmails.length > 0 ? (
+                        <ul className="space-y-2">
+                          {guestEmails.map(email => (
+                            <li key={email} className="flex items-center justify-between p-2 rounded-md bg-black/20">
+                              <span className="text-sm text-foreground/80">{email}</span>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveGuest(email)}>
+                                <Trash2 size={16} />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground text-center py-4">There are currently no guest users.</p>
+                      )}
+                    </div>
+                    <Separator />
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Note:</strong> Changes made here are for UI demonstration only. To permanently add or remove a guest, you must ask me to update the guest list in the configuration.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </div>
