@@ -30,6 +30,7 @@ import { countries } from '@/lib/countries';
 import { Separator } from '@/components/ui/separator';
 import { FeatureCarousel } from './components/feature-carousel';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { HowToUse } from './components/how-to-use';
 
 function SubmitButton({ isSubmitting, step, setStep }: { isSubmitting: boolean; step: number; setStep: (step: number) => void; }) {
   const { pending } = useFormStatus();
@@ -418,8 +419,9 @@ export default function Home() {
                 </Card>
             </div>
             
-            <div className="lg:col-span-2">
+            <div className="space-y-6">
               <FeatureCarousel />
+              <HowToUse />
             </div>
         </div>
     </div>
