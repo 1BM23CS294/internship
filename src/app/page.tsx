@@ -196,7 +196,7 @@ export default function Home() {
         <div className="max-w-screen-2xl mx-auto space-y-6">
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-card/10 border-primary/20 backdrop-blur-sm">
+                <Card className="bg-black/30 border-primary/20 backdrop-blur-md">
                     <CardHeader className="bg-black/20 rounded-t-lg">
                         <div className="flex items-center justify-between">
                             <h1 className="text-xl font-bold">Intelligent Resume Analyzer</h1>
@@ -226,7 +226,7 @@ export default function Home() {
                                     id="job-description"
                                     name="jobDescription"
                                     placeholder="Paste the job description here..."
-                                    className="min-h-[150px] bg-background/50 border-border/50"
+                                    className="min-h-[150px] bg-black/20 border-border/50"
                                     required
                                 />
                                 {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
@@ -234,7 +234,7 @@ export default function Home() {
                             <div className="space-y-2">
                                 <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
                                 <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
-                                <Button type="button" variant="outline" className="w-full bg-background/50 hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
+                                <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
                                     {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
                                 </Button>
                                 {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
@@ -246,7 +246,7 @@ export default function Home() {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-card/10 border-primary/20 backdrop-blur-sm flex flex-col">
+                <Card className="bg-black/30 border-primary/20 backdrop-blur-md flex flex-col">
                     <CardHeader className='flex-row items-center justify-between pb-4'>
                         <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
                         {candidates.length > 0 && (
@@ -294,7 +294,7 @@ export default function Home() {
             </div>
 
             <div ref={resultsRef}>
-                <Card className="bg-card/10 border-primary/20 backdrop-blur-sm flex flex-col overflow-hidden">
+                <Card className="bg-black/30 border-primary/20 backdrop-blur-md flex flex-col overflow-hidden">
                     <CardContent className="p-0 flex-grow">
                         <ScrollArea className="h-full w-full">
                            <div className='p-6 min-h-[500px] flex flex-col justify-center'>

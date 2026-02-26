@@ -199,7 +199,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <Card className="w-full max-w-md bg-card/10 border border-primary/20 shadow-2xl shadow-primary/10 backdrop-blur-sm">
+    <Card className="w-full max-w-md bg-black/30 border border-primary/20 shadow-2xl shadow-primary/10 backdrop-blur-md">
         <CardHeader className="text-center">
             <CardTitle className="text-2xl">{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
@@ -217,7 +217,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 value={firstName}
                                 onChange={(e) => setFirstName(e.target.value)}
                                 required
-                                className="bg-background/50 border-border/50"
+                                className="bg-black/20 border-border/50"
                             />
                         </div>
                         <div className="space-y-2 flex-1">
@@ -229,7 +229,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                                 value={lastName}
                                 onChange={(e) => setLastName(e.target.value)}
                                 required
-                                className="bg-background/50 border-border/50"
+                                className="bg-black/20 border-border/50"
                             />
                         </div>
                     </div>
@@ -243,7 +243,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
-                        className="bg-background/50 border-border/50"
+                        className="bg-black/20 border-border/50"
                     />
                 </div>
                 <div className="space-y-2">
@@ -254,7 +254,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        className="bg-background/50 border-border/50"
+                        className="bg-black/20 border-border/50"
                         placeholder="••••••••"
                     />
                 </div>

@@ -36,7 +36,7 @@ export function FeedbackCard({ className }: { className?: string }) {
   };
 
   return (
-    <Card className={cn("bg-card/10 border-primary/20 backdrop-blur-sm flex flex-col", className)}>
+    <Card className={cn("bg-black/30 border-primary/20 backdrop-blur-md flex flex-col", className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg font-semibold">
           <Star size={18} /> Website Feedback
@@ -70,7 +70,7 @@ export function FeedbackCard({ className }: { className?: string }) {
               placeholder="What could we improve?"
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              className="min-h-[100px] bg-background/50 border-border/50 flex-grow"
+              className="min-h-[100px] bg-black/20 border-border/50 flex-grow"
             />
           </div>
           <Button type="submit" className="w-full">Submit Feedback</Button>
