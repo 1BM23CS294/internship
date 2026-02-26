@@ -82,7 +82,6 @@ function getInitials(name: string) {
 }
 
 export default function Home() {
-  // useActionState now returns a pending status, which simplifies loading state management.
   const [state, formAction, isPending] = useActionState(analyzeResume, initialState);
   const [step, setStep] = useState(1);
   const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
@@ -127,8 +126,15 @@ export default function Home() {
 
   // This effect handles the result of the form action.
   useEffect(() => {
-    // Don't run on initial render or while the action is pending.
-    if (isPending || state.message === '') {
+    // When the action becomes pending, clear the previous result and scroll to the results area.
+    if (isPending) {
+      setSelectedCandidate(null);
+      resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
+      return; // Don't process state changes while pending
+    }
+
+    // Don't run on initial render
+    if (state.message === '') {
       return;
     }
 
@@ -160,7 +166,6 @@ export default function Home() {
       setResumeFileName('');
       setVideoFileName('');
       setStep(1);
-      setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
     } else if (!state.success) {
       toast({
         title: "Analysis Failed",
@@ -170,25 +175,6 @@ export default function Home() {
     }
   }, [state, isPending, user, firestore, reportsCollection, toast]);
 
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const jobDesc = formData.get('jobDescription') as string;
-    const resumeFile = formData.get('resumeFile') as File;
-    const country = formData.get('country') as string;
-
-    if (!jobDesc || resumeFile.size === 0 || !country) {
-      toast({ title: "Please complete all required fields.", description: "Job Description, Resume, and Country are required to proceed.", variant: "destructive" });
-      setStep(1);
-      return;
-    }
-    
-    setSelectedCandidate(null);
-    formAction(formData); // Directly call the action.
-    setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-  };
-  
   const handleDeleteReport = (reportId: string, ownerId: string) => {
     if(!user || !firestore || user.uid !== ownerId) return;
 
@@ -224,7 +210,6 @@ export default function Home() {
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
-  // The loading state is now driven directly by the `isPending` state from `useActionState`.
   const renderMainPanelContent = () => {
     if (isPending) {
       return <AnalysisLoading />;
@@ -272,7 +257,7 @@ export default function Home() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow pt-6">
-                            <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
+                            <form ref={formRef} action={formAction} className="space-y-4">
                                 <div className={cn("space-y-4", step !== 1 && "hidden")}>
                                       <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
                                       <div className="space-y-2">
@@ -350,7 +335,6 @@ export default function Home() {
                                               <ArrowLeft className="mr-2 h-4 w-4" /> Back
                                           </Button>
                                       )}
-                                      {/* The submit button now lives inside the form and uses useFormStatus */}
                                       <SubmitButton step={step} setStep={setStep} />
                                   </div>
                             </form>
