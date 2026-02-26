@@ -15,13 +15,22 @@ import {
   DollarSign,
   TrendingUp,
   UserCog,
+  Video,
+  Smile,
+  Voicemail,
+  Lightbulb,
+  Clock,
+  Users,
+  Calendar,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
 import { CircularProgress } from './circular-progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { getScoreStyling } from '@/lib/theme';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: string, score: number, icon: React.ElementType, explanation: string }) {
     const styling = getScoreStyling(score * 10); // score is 0-10, styling expects 0-100
@@ -41,17 +50,18 @@ function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: s
 }
 
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
-  const { candidate, analysis, recommendations, salaryPrediction, personalityProfile } = data;
+  const { candidate, analysis, recommendations, salaryPrediction, personalityProfile, videoAnalysis, workLifeBalance, networking } = data;
   const performanceMetrics = analysis.performanceMetrics;
-  const showSalaryTab = !!(salaryPrediction && salaryPrediction.predictedMinSalary > 0);
-  const showPersonalityTab = !!personalityProfile;
-
-  const getTabGridClass = () => {
-    let count = 4; // Overview, Performance, Recommendations, Details
-    if (showSalaryTab) count++;
-    if (showPersonalityTab) count++;
-    return `grid-cols-${count}`;
-  }
+  
+  const activeTabs = [
+    'overview', 'performance', 'recommendations',
+    videoAnalysis ? 'video' : null,
+    salaryPrediction ? 'salary' : null,
+    personalityProfile ? 'personality' : null,
+    workLifeBalance ? 'worklife' : null,
+    networking ? 'networking' : null,
+    'details'
+  ].filter(Boolean) as string[];
 
   return (
     <div className="w-full">
@@ -71,18 +81,18 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
            </div>
       </div>
         <Tabs defaultValue="overview" className="w-full" activationMode='manual'>
-            <TabsList className={cn("grid w-full bg-black/20", 
-                showSalaryTab && showPersonalityTab ? "grid-cols-6" :
-                (showSalaryTab || showPersonalityTab) ? "grid-cols-5" :
-                "grid-cols-4"
-            )}>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="performance">Performance</TabsTrigger>
-                <TabsTrigger value="recommendations">AI Insights</TabsTrigger>
-                {showSalaryTab && <TabsTrigger value="salary">Salary</TabsTrigger>}
-                {showPersonalityTab && <TabsTrigger value="personality">Personality</TabsTrigger>}
-                <TabsTrigger value="details">Resume Details</TabsTrigger>
+            <TabsList className={cn("grid w-full bg-black/20")} style={{ gridTemplateColumns: `repeat(${activeTabs.length}, minmax(0, 1fr))`}}>
+                {activeTabs.includes('overview') && <TabsTrigger value="overview">Overview</TabsTrigger>}
+                {activeTabs.includes('performance') && <TabsTrigger value="performance">Performance</TabsTrigger>}
+                {activeTabs.includes('recommendations') && <TabsTrigger value="recommendations">AI Insights</TabsTrigger>}
+                {activeTabs.includes('video') && <TabsTrigger value="video">Video</TabsTrigger>}
+                {activeTabs.includes('salary') && <TabsTrigger value="salary">Salary</TabsTrigger>}
+                {activeTabs.includes('personality') && <TabsTrigger value="personality">Personality</TabsTrigger>}
+                {activeTabs.includes('worklife') && <TabsTrigger value="worklife">Work-Life</TabsTrigger>}
+                {activeTabs.includes('networking') && <TabsTrigger value="networking">Networking</TabsTrigger>}
+                {activeTabs.includes('details') && <TabsTrigger value="details">Resume Details</TabsTrigger>}
             </TabsList>
+            
             <TabsContent value="overview" className="mt-6">
             <Card className='bg-black/20 border border-primary/20'>
                 <CardHeader>
@@ -103,6 +113,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </CardContent>
             </Card>
             </TabsContent>
+
             <TabsContent value="performance" className="mt-6">
             <Card className='bg-black/20 border border-primary/20'>
                 <CardHeader>
@@ -117,6 +128,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </CardContent>
             </Card>
             </TabsContent>
+
             <TabsContent value="recommendations" className="mt-6">
             <div className="grid md:grid-cols-2 gap-6">
                 <Card className='bg-black/20 border border-primary/20'>
@@ -151,7 +163,51 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 </Card>
             </div>
             </TabsContent>
-             {showSalaryTab && <TabsContent value="salary" className="mt-6">
+
+            {videoAnalysis && <TabsContent value="video" className='mt-6'>
+                <Card className='bg-black/20 border border-primary/20'>
+                     <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                            <Video size={20} /> AI Video Resume Feedback
+                        </CardTitle>
+                        <CardContent className="text-sm text-muted-foreground pt-2">This is a simulated analysis. In a real product, this would involve complex video processing models.</CardContent>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Smile size={16} /> Facial Expression Analysis</h4>
+                            <p className='text-sm text-muted-foreground mb-2'><strong>Overall Tone:</strong> {videoAnalysis.facialExpression.overallTone}</p>
+                            <ul className="list-disc pl-5 space-y-1 text-sm text-foreground/80">
+                                {videoAnalysis.facialExpression.keyExpressions.map((e, i) => <li key={i}>{e.expression} at {e.timestamp}</li>)}
+                            </ul>
+                        </div>
+                         <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Voicemail size={16} /> Voice Confidence Analysis</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                                <div className="p-3 bg-black/20 rounded-lg">
+                                    <p className="text-2xl font-bold">{videoAnalysis.voiceConfidence.clarityScore}%</p>
+                                    <p className="text-xs text-muted-foreground">Clarity Score</p>
+                                </div>
+                                 <div className="p-3 bg-black/20 rounded-lg">
+                                    <p className="text-lg font-semibold">{videoAnalysis.voiceConfidence.fillerWordCount}</p>
+                                    <p className="text-xs text-muted-foreground">Filler Words</p>
+                                </div>
+                                <div className="p-3 bg-black/20 rounded-lg">
+                                    <p className="text-lg font-semibold capitalize">{videoAnalysis.voiceConfidence.pace}</p>
+                                    <p className="text-xs text-muted-foreground">Pacing</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Lightbulb size={16} /> Micro-Expression Coaching</h4>
+                            <ul className="list-disc pl-5 space-y-2 text-sm text-foreground/80">
+                                {videoAnalysis.microExpressionCoaching.map((tip, i) => <li key={i}>{tip}</li>)}
+                            </ul>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>}
+
+             {salaryPrediction && <TabsContent value="salary" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-primary">
@@ -187,7 +243,8 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     </CardContent>
                 </Card>
             </TabsContent>}
-            {showPersonalityTab && <TabsContent value="personality" className="mt-6">
+
+            {personalityProfile && <TabsContent value="personality" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-primary">
@@ -218,6 +275,94 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     </CardContent>
                 </Card>
             </TabsContent>}
+
+             {workLifeBalance && <TabsContent value="worklife" className="mt-6">
+                <Card className='bg-black/20 border border-primary/20'>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                            <Clock size={20} /> Work-Life Balance Predictor
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="text-center p-6 rounded-lg bg-black/20 flex flex-col items-center justify-center">
+                            <p className="text-sm text-muted-foreground">Predicted Balance Score</p>
+                            <p className={cn("text-5xl font-bold tracking-tight my-2", getScoreStyling(workLifeBalance.balanceScore).color)}>
+                                {workLifeBalance.balanceScore}
+                                <span className='text-3xl text-foreground/50'>/100</span>
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
+                             <div className="p-3 bg-black/20 rounded-lg">
+                                <p className="text-lg font-semibold">{workLifeBalance.predictedHoursPerWeek} hrs</p>
+                                <p className="text-xs text-muted-foreground">Predicted Weekly Hours</p>
+                            </div>
+                            <div className="p-3 bg-black/20 rounded-lg">
+                                <p className="text-lg font-semibold">{workLifeBalance.flexibility}</p>
+                                <p className="text-xs text-muted-foreground">Flexibility</p>
+                            </div>
+                        </div>
+                        <div>
+                           <h4 className='font-semibold mb-2'>Basis for Prediction</h4>
+                           <p className='text-sm text-muted-foreground'>{workLifeBalance.explanation}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>}
+
+            {networking && <TabsContent value="networking" className="mt-6">
+                <Card className='bg-black/20 border border-primary/20'>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-primary">
+                            <Users size={20} /> Networking Opportunity Finder
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                        <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Calendar size={16} /> Relevant Events</h4>
+                             <div className="space-y-3">
+                                {networking.relevantEvents.map((event, i) => (
+                                    <div key={i} className="p-3 bg-black/20 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <p className='font-semibold'>{event.name}</p>
+                                            <p className='text-xs text-muted-foreground'>{event.date} - {event.location}</p>
+                                        </div>
+                                        <Button variant="ghost" size="sm" asChild><Link href={event.url} target="_blank"><LinkIcon size={14} /></Link></Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                         <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Users size={16} /> Potential Contacts</h4>
+                             <div className="space-y-3">
+                                {networking.potentialContacts.map((contact, i) => (
+                                    <div key={i} className="p-3 bg-black/20 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <p className='font-semibold'>{contact.name}</p>
+                                            <p className='text-xs text-muted-foreground'>{contact.title} at {contact.company}</p>
+                                        </div>
+                                        <Button variant="ghost" size="sm" asChild><Link href={contact.linkedInUrl} target="_blank"><LinkIcon size={14} /></Link></Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                         <div>
+                            <h4 className='font-semibold mb-3 flex items-center gap-2'><Briefcase size={16} /> Recommended Groups</h4>
+                            <div className="space-y-3">
+                                {networking.recommendedGroups.map((group, i) => (
+                                    <div key={i} className="p-3 bg-black/20 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <p className='font-semibold'>{group.name}</p>
+                                            <p className='text-xs text-muted-foreground'>{group.platform}</p>
+                                        </div>
+                                        <Button variant="ghost" size="sm" asChild><Link href={group.url} target="_blank"><LinkIcon size={14} /></Link></Button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>}
+
             <TabsContent value="details" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>
                 <CardHeader>
