@@ -9,6 +9,7 @@ import {
   analyzeVideoResume,
   predictWorkLifeBalance,
   findNetworkingOpportunities,
+  rewriteResume,
 } from '@/ai/flows';
 import type {
   AnalyzedCandidate,
@@ -16,6 +17,7 @@ import type {
   VideoAnalysisOutput,
   WorkLifeBalanceOutput,
   NetworkingOpportunitiesOutput,
+  RewriteResumeOutput,
 } from '@/lib/types';
 import { z } from 'zod';
 
@@ -32,6 +34,7 @@ const AnalyzeResumeSchema = z.object({
   videoFile: fileSchema.refine(file => file.size < 50 * 1024 * 1024, 'Video file size must be less than 50MB.').optional(),
   predictWorkLife: z.coerce.boolean().default(false),
   findNetworking: z.coerce.boolean().default(false),
+  rewriteResume: z.coerce.boolean().default(false),
 });
 
 
@@ -58,6 +61,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     videoFile: formData.get('videoFile'),
     predictWorkLife: formData.get('predictWorkLife'),
     findNetworking: formData.get('findNetworking'),
+    rewriteResume: formData.get('rewriteResume'),
   });
 
   if (!validatedFields.success) {
@@ -76,7 +80,8 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     analyzeVideo,
     videoFile,
     predictWorkLife,
-    findNetworking
+    findNetworking,
+    rewriteResume: shouldRewriteResume
   } = validatedFields.data;
 
   try {
@@ -97,6 +102,12 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     const resumeFullTextForProfiling = `${extractedInfo.summary || ''}\n\nSkills: ${extractedInfo.skills.join(', ')}\n\nExperience:\n${resumeExperienceSummary}`;
 
     // 2. Perform all selected analyses in parallel
+    const rewritePromises = shouldRewriteResume ? [
+        rewriteResume({ style: 'ats', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
+        rewriteResume({ style: 'creative', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
+        rewriteResume({ style: 'executive', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
+    ] : [Promise.resolve(null), Promise.resolve(null), Promise.resolve(null)];
+
     const analysisPromises = [
         generateResumeMatchScore({
             resumeSkills: extractedInfo.skills,
@@ -117,7 +128,8 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
         predictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
         (analyzeVideo && videoFile) ? analyzeVideoResume({ videoDataUri: await fileToDataUri(videoFile) }) : Promise.resolve(null),
         predictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
-        findNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null)
+        findNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
+        ...rewritePromises,
     ];
 
     const [
@@ -128,6 +140,9 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
         videoAnalysis,
         workLifeBalance,
         networking,
+        atsRewrite,
+        creativeRewrite,
+        executiveRewrite,
     ] = await Promise.all(analysisPromises);
     
     // Post-update recommendations with the actual score
@@ -145,6 +160,11 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
       videoAnalysis: videoAnalysis || undefined,
       workLifeBalance: workLifeBalance || undefined,
       networking: networking || undefined,
+      resumeRewrite: (atsRewrite && creativeRewrite && executiveRewrite) ? {
+        ats: atsRewrite as RewriteResumeOutput,
+        creative: creativeRewrite as RewriteResumeOutput,
+        executive: executiveRewrite as RewriteResumeOutput,
+      } : undefined,
     };
 
     return { success: true, message: 'Analysis complete.', data: result };

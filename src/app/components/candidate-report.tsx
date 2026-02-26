@@ -23,6 +23,7 @@ import {
   Users,
   Calendar,
   Link as LinkIcon,
+  PenSquare,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
@@ -50,7 +51,7 @@ function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: s
 }
 
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
-  const { candidate, analysis, recommendations, salaryPrediction, personalityProfile, videoAnalysis, workLifeBalance, networking } = data;
+  const { candidate, analysis, recommendations, salaryPrediction, personalityProfile, videoAnalysis, workLifeBalance, networking, resumeRewrite } = data;
   const performanceMetrics = analysis.performanceMetrics;
   
   const activeTabs = [
@@ -60,6 +61,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
     personalityProfile ? 'personality' : null,
     workLifeBalance ? 'worklife' : null,
     networking ? 'networking' : null,
+    resumeRewrite ? 'rewrite' : null,
     'details'
   ].filter(Boolean) as string[];
 
@@ -90,6 +92,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                 {activeTabs.includes('personality') && <TabsTrigger value="personality">Personality</TabsTrigger>}
                 {activeTabs.includes('worklife') && <TabsTrigger value="worklife">Work-Life</TabsTrigger>}
                 {activeTabs.includes('networking') && <TabsTrigger value="networking">Networking</TabsTrigger>}
+                {activeTabs.includes('rewrite') && <TabsTrigger value="rewrite">Rewrite</TabsTrigger>}
                 {activeTabs.includes('details') && <TabsTrigger value="details">Resume Details</TabsTrigger>}
             </TabsList>
             
@@ -362,6 +365,88 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     </CardContent>
                 </Card>
             </TabsContent>}
+
+            {resumeRewrite && (
+                <TabsContent value="rewrite" className="mt-6">
+                    <Card className='bg-black/20 border border-primary/20'>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-primary">
+                                <PenSquare size={20} /> AI Resume Rewriter
+                            </CardTitle>
+                            <CardContent className="text-sm text-muted-foreground pt-2">The AI has rewritten the resume in three different styles to target different audiences.</CardContent>
+                        </CardHeader>
+                        <CardContent>
+                            <Tabs defaultValue="ats" className="w-full">
+                                <TabsList className="grid w-full grid-cols-3 bg-black/30">
+                                    <TabsTrigger value="ats">ATS-Friendly</TabsTrigger>
+                                    <TabsTrigger value="creative">Creative</TabsTrigger>
+                                    <TabsTrigger value="executive">Executive</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="ats" className="mt-4">
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h4 className='font-semibold mb-2'>Rewritten Summary</h4>
+                                            <p className='text-sm text-muted-foreground whitespace-pre-wrap'>{resumeRewrite.ats.rewrittenSummary}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className='font-semibold mb-4'>Rewritten Experience</h4>
+                                            <div className="space-y-4">
+                                            {resumeRewrite.ats.rewrittenExperience.map((exp, i) => (
+                                                <div key={i} className="pl-4 border-l-2 border-primary/50">
+                                                    <p className="font-bold">{exp.title}</p>
+                                                    <p className="text-sm text-muted-foreground">{exp.company}</p>
+                                                    <p className="text-sm mt-1 whitespace-pre-wrap">{exp.rewrittenDescription}</p>
+                                                </div>
+                                            ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+                                <TabsContent value="creative" className="mt-4">
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h4 className='font-semibold mb-2'>Rewritten Summary</h4>
+                                            <p className='text-sm text-muted-foreground whitespace-pre-wrap'>{resumeRewrite.creative.rewrittenSummary}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className='font-semibold mb-4'>Rewritten Experience</h4>
+                                            <div className="space-y-4">
+                                            {resumeRewrite.creative.rewrittenExperience.map((exp, i) => (
+                                                <div key={i} className="pl-4 border-l-2 border-primary/50">
+                                                    <p className="font-bold">{exp.title}</p>
+                                                    <p className="text-sm text-muted-foreground">{exp.company}</p>
+                                                    <p className="text-sm mt-1 whitespace-pre-wrap">{exp.rewrittenDescription}</p>
+                                                </div>
+                                            ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+                                <TabsContent value="executive" className="mt-4">
+                                    <div className="space-y-6">
+                                        <div>
+                                            <h4 className='font-semibold mb-2'>Rewritten Summary</h4>
+                                            <p className='text-sm text-muted-foreground whitespace-pre-wrap'>{resumeRewrite.executive.rewrittenSummary}</p>
+                                        </div>
+                                        <div>
+                                            <h4 className='font-semibold mb-4'>Rewritten Experience</h4>
+                                            <div className="space-y-4">
+                                            {resumeRewrite.executive.rewrittenExperience.map((exp, i) => (
+                                                <div key={i} className="pl-4 border-l-2 border-primary/50">
+                                                    <p className="font-bold">{exp.title}</p>
+                                                    <p className="text-sm text-muted-foreground">{exp.company}</p>
+                                                    <p className="text-sm mt-1 whitespace-pre-wrap">{exp.rewrittenDescription}</p>
+                                                </div>
+                                            ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </TabsContent>
+                            </Tabs>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            )}
 
             <TabsContent value="details" className="mt-6">
                 <Card className='bg-black/20 border border-primary/20'>

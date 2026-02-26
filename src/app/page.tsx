@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -294,6 +294,10 @@ export default function Home() {
                                 <div className="flex items-center space-x-2">
                                     <Checkbox id="find-networking" name="findNetworking" defaultChecked={true} />
                                     <Label htmlFor="find-networking" className='flex items-center gap-2 text-muted-foreground grow'><Users size={16} />Networking Opportunity Finder</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <Checkbox id="rewrite-resume" name="rewriteResume" defaultChecked={true} />
+                                    <Label htmlFor="rewrite-resume" className='flex items-center gap-2 text-muted-foreground grow'><PenSquare size={16} />Resume Rewriter</Label>
                                 </div>
                               </div>
                            </div>

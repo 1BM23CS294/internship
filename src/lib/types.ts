@@ -6,7 +6,8 @@ import type {
   GenerateCareerPersonalityProfileOutput,
   VideoAnalysisOutput,
   WorkLifeBalanceOutput,
-  NetworkingOpportunitiesOutput
+  NetworkingOpportunitiesOutput,
+  RewriteResumeOutput
 } from '@/ai/flows';
 
 export type Candidate = ExtractResumeInformationOutput;
@@ -19,6 +20,7 @@ export type CareerPersonalityProfile = GenerateCareerPersonalityProfileOutput;
 export type { VideoAnalysisOutput } from '@/ai/flows';
 export type { WorkLifeBalanceOutput } from '@/ai/flows';
 export type { NetworkingOpportunitiesOutput } from '@/ai/flows';
+export type { RewriteResumeOutput } from '@/ai/flows';
 
 export type AnalyzedCandidate = {
   id: string;
@@ -32,4 +34,9 @@ export type AnalyzedCandidate = {
   videoAnalysis?: VideoAnalysisOutput;
   workLifeBalance?: WorkLifeBalanceOutput;
   networking?: NetworkingOpportunitiesOutput;
+  resumeRewrite?: {
+    ats: RewriteResumeOutput;
+    creative: RewriteResumeOutput;
+    executive: RewriteResumeOutput;
+  };
 };

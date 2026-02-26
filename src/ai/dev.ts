@@ -10,3 +10,4 @@ import '@/ai/flows/generate-career-personality-profile.ts';
 import '@/ai/flows/analyze-video-resume.ts';
 import '@/ai/flows/predict-work-life-balance.ts';
 import '@/ai/flows/find-networking-opportunities.ts';
+import '@/ai/flows/rewrite-resume-flow.ts';
