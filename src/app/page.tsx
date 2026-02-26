@@ -72,6 +72,7 @@ export default function Home() {
   const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
   const [fileName, setFileName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null); // For scrolling to results
@@ -79,6 +80,8 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
+
+  const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
   const reportsQuery = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -246,7 +249,7 @@ export default function Home() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
-                                     <Select name="country" required>
+                                     <Select name="country" required onValueChange={setSelectedCountry}>
                                         <SelectTrigger className="w-full bg-black/20 border-border/50">
                                             <SelectValue placeholder="Select a country..." />
                                         </SelectTrigger>
@@ -262,9 +265,12 @@ export default function Home() {
 
                             <div className="flex items-center space-x-2 pt-2">
                                 <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
-                                <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground'>
+                                <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground grow'>
                                     <DollarSign size={16} />
-                                    Include Salary Prediction
+                                    <span>Include Salary Prediction</span>
+                                    {selectedCurrency && (
+                                        <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal ml-auto">{selectedCurrency}</Badge>
+                                    )}
                                 </Label>
                             </div>
                             <div className="pt-2">
