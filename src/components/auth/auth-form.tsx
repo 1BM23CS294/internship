@@ -279,9 +279,6 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
                 </Link>
             </Button>
             </p>
-             <CardDescription className="w-full text-center text-xs pt-4">
-                Guests can sign in with their pre-approved Google account for read-only access.
-            </CardDescription>
         </CardFooter>
     </Card>
   );

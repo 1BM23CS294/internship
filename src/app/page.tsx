@@ -415,6 +415,35 @@ export default function Home() {
             <div>
               <HowToUse />
             </div>
+            
+            {!isGuest && (
+            <div>
+              <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users size={18} /> Guest Access
+                  </CardTitle>
+                  <CardDescription>
+                    Allow specific users read-only access to all analysis reports. Guests cannot create new analyses or delete reports.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests</h4>
+                  {guestEmails.length > 0 ? (
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-foreground/80">
+                      {guestEmails.map(email => <li key={email}>{email}</li>)}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">There are currently no guest users.</p>
+                  )}
+                  <Separator className="my-4" />
+                  <p className="text-xs text-muted-foreground">
+                    To add or remove a guest, you must request a change from the site administrator to update the guest list.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            )}
         </div>
     </div>
   );
