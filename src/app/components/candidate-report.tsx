@@ -146,9 +146,9 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="text-center p-4 rounded-lg bg-black/20">
-                            <p className="text-sm text-muted-foreground">Predicted Annual Salary Range (USD)</p>
+                            <p className="text-sm text-muted-foreground">Predicted Annual Salary Range ({salaryPrediction.currency})</p>
                             <p className="text-3xl sm:text-4xl font-bold text-primary tracking-tight">
-                                {`$${salaryPrediction.predictedMinSalary.toLocaleString()} - $${salaryPrediction.predictedMaxSalary.toLocaleString()}`}
+                                {`${new Intl.NumberFormat('en-US', { style: 'currency', currency: salaryPrediction.currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(salaryPrediction.predictedMinSalary).replace(salaryPrediction.currency, '').trim()} - ${new Intl.NumberFormat('en-US', { style: 'currency', currency: salaryPrediction.currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(salaryPrediction.predictedMaxSalary).replace(salaryPrediction.currency, '').trim()}`}
                             </p>
                         </div>
                         <div className='space-y-4'>

@@ -13,6 +13,7 @@ const AnalyzeResumeSchema = z.object({
   jobDescription: z.string().min(50, 'Job description must be at least 50 characters.'),
   resumeFile: z.instanceof(File).refine(file => file.size > 0, 'A resume file is required.').refine(file => file.size < 5 * 1024 * 1024, 'File size must be less than 5MB.'),
   predictSalary: z.coerce.boolean().default(true),
+  country: z.string().min(2, 'Please select a country.'),
 });
 
 type FormState = {
@@ -22,6 +23,7 @@ type FormState = {
   errors?: {
     jobDescription?: string[];
     resumeFile?: string[];
+    country?: string[];
     _form?: string[];
   };
 };
@@ -31,6 +33,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     jobDescription: formData.get('jobDescription'),
     resumeFile: formData.get('resumeFile'),
     predictSalary: formData.get('predictSalary'),
+    country: formData.get('country'),
   });
 
   if (!validatedFields.success) {
@@ -41,7 +44,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
     };
   }
 
-  const { jobDescription, resumeFile, predictSalary } = validatedFields.data;
+  const { jobDescription, resumeFile, predictSalary, country } = validatedFields.data;
 
   try {
     // 1. Convert file to data URI
@@ -95,6 +98,7 @@ export async function analyzeResume(prevState: FormState, formData: FormData): P
             jobDescription,
             resumeSkills: extractedInfo.skills,
             resumeExperience: resumeExperienceSummary,
+            country,
         });
     } else {
         salaryPrediction = {

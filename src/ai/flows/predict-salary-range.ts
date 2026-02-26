@@ -24,6 +24,9 @@ const PredictSalaryRangeInputSchema = z.object({
     .describe(
       "A summary of the work experience from the candidate's resume."
     ),
+  country: z
+    .string()
+    .describe('The country for which to predict the salary (e.g., "USA", "GBR").'),
 });
 export type PredictSalaryRangeInput = z.infer<
   typeof PredictSalaryRangeInputSchema
@@ -32,11 +35,11 @@ export type PredictSalaryRangeInput = z.infer<
 const PredictSalaryRangeOutputSchema = z.object({
   predictedMinSalary: z
     .number()
-    .describe('The predicted minimum annual salary in USD.'),
+    .describe('The predicted minimum annual salary in the local currency.'),
   predictedMaxSalary: z
     .number()
-    .describe('The predicted maximum annual salary in USD.'),
-  currency: z.string().default('USD').describe('The currency of the predicted salary.'),
+    .describe('The predicted maximum annual salary in the local currency.'),
+  currency: z.string().describe('The currency code of the predicted salary (e.g., "USD", "GBP", "EUR").'),
   confidenceScore: z
     .number()
     .min(0)
@@ -67,16 +70,18 @@ const prompt = ai.definePrompt({
   name: 'predictSalaryRangePrompt',
   input: { schema: PredictSalaryRangeInputSchema },
   output: { schema: PredictSalaryRangeOutputSchema },
-  prompt: `You are an expert compensation analyst and career coach. Your task is to predict a salary range for a candidate based on their resume and a given job description, and provide tips for salary optimization.
+  prompt: `You are an expert compensation analyst and career coach. Your task is to predict a salary range for a candidate based on their resume, a given job description, and a specific country.
 
-Analyze the provided job description, the candidate's skills, and their work experience to estimate a realistic annual salary range in USD.
+Analyze the provided job description, the candidate's skills, and their work experience to estimate a realistic annual salary range in the local currency for the specified country.
 
-Also, provide a confidence score for your prediction and a brief explanation of the key factors influencing the salary range.
+Also, provide a confidence score for your prediction, a brief explanation of the key factors influencing the salary range, and the correct currency code (e.g., USD, GBP, EUR, INR).
 
 Finally, offer a few actionable optimization tips for the candidate to help them increase their earning potential for similar roles in the future.
 
 **Job Description:**
 {{{jobDescription}}}
+
+**Country:** {{{country}}}
 
 **Candidate Skills:**
 {{#each resumeSkills}}

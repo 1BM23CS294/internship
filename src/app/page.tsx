@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -26,6 +26,8 @@ import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc } f
 import { Badge } from '@/components/ui/badge';
 import { FeedbackCard } from './components/feedback-card';
 import { getScoreStyling } from '@/lib/theme';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { countries } from '@/lib/countries';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -123,7 +125,7 @@ export default function Home() {
         } else if (!state.success && state.message && state.message !== '') {
           toast({
             title: "Analysis Failed",
-            description: state.errors?._form?.[0] || state.message,
+            description: state.errors?._form?.[0] || state.errors?.country?.[0] || state.message,
             variant: "destructive",
           });
         }
@@ -227,20 +229,38 @@ export default function Home() {
                                     id="job-description"
                                     name="jobDescription"
                                     placeholder="Paste the job description here..."
-                                    className="min-h-[150px] bg-black/20 border-border/50"
+                                    className="min-h-[120px] bg-black/20 border-border/50"
                                     required
                                 />
                                 {state.errors?.jobDescription && <p className="text-red-500 text-sm mt-1">{state.errors.jobDescription[0]}</p>}
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
-                                <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
-                                <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
-                                    {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
-                                </Button>
-                                {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
+                                    <Input id="resume-file" name="resumeFile" type="file" ref={fileInputRef} onChange={(e) => setFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
+                                    <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={() => fileInputRef.current?.click()}>
+                                        {fileName ? <span className="truncate text-primary">{fileName}</span> : 'Select a file (PDF, DOCX)'}
+                                    </Button>
+                                    {state.errors?.resumeFile && <p className="text-red-500 text-sm mt-1">{state.errors.resumeFile[0]}</p>}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
+                                     <Select name="country" required>
+                                        <SelectTrigger className="w-full bg-black/20 border-border/50">
+                                            <SelectValue placeholder="Select a country..." />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {countries.map(country => (
+                                                <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {state.errors?.country && <p className="text-red-500 text-sm mt-1">{state.errors.country[0]}</p>}
+                                </div>
                             </div>
-                            <div className="flex items-center space-x-2">
+
+                            <div className="flex items-center space-x-2 pt-2">
                                 <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
                                 <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground'>
                                     <DollarSign size={16} />

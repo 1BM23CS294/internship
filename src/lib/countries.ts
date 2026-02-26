@@ -1,0 +1,16 @@
+export const countries = [
+  { value: 'USA', label: 'United States' },
+  { value: 'GBR', label: 'United Kingdom' },
+  { value: 'CAN', label: 'Canada' },
+  { value: 'AUS', label: 'Australia' },
+  { value: 'DEU', label: 'Germany' },
+  { value: 'FRA', label: 'France' },
+  { value: 'IND', label: 'India' },
+  { value: 'JPN', label: 'Japan' },
+  { value: 'CHN', label: 'China' },
+  { value: 'BRA', label: 'Brazil' },
+  { value: 'ZAF', label: 'South Africa' },
+  { value: 'NGA', label: 'Nigeria' },
+  { value: 'SGP', label: 'Singapore' },
+  { value: 'ARE', label: 'United Arab Emirates' },
+];
