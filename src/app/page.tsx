@@ -31,6 +31,7 @@ import { Separator } from '@/components/ui/separator';
 import { FeatureCarousel } from './components/feature-carousel';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { HowToUse } from './components/how-to-use';
+import { RoadmapCard } from './components/roadmap-card';
 
 function SubmitButton({ isSubmitting, step, setStep }: { isSubmitting: boolean; step: number; setStep: (step: number) => void; }) {
   const { pending } = useFormStatus();
@@ -422,6 +423,7 @@ export default function Home() {
             <div className="space-y-6">
               <FeatureCarousel />
               <HowToUse />
+              <RoadmapCard />
             </div>
         </div>
     </div>
