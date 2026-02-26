@@ -22,7 +22,7 @@ import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase,
 import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, collectionGroup, setDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, collectionGroup, setDoc, deleteField } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { getScoreStyling } from '@/lib/theme';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -102,7 +102,7 @@ export default function Home() {
 
   const { data: guestConfigDoc, isLoading: isLoadingGuests } = useDoc(guestConfigRef);
 
-  const guestEmails = useMemo(() => guestConfigDoc?.emails || [], [guestConfigDoc]);
+  const guestEmails = useMemo(() => Object.keys(guestConfigDoc?.emails || {}), [guestConfigDoc]);
   
   const isGuest = useMemo(() => user?.email && guestEmails.includes(user.email), [user, guestEmails]);
   const historyTitle = isGuest ? 'Public Analysis Feed' : 'Analysis History';
@@ -234,7 +234,7 @@ export default function Home() {
     }
     if (newGuestEmail && !guestEmails.includes(newGuestEmail) && newGuestEmail.includes('@')) {
       if (!guestConfigRef) return;
-      setDoc(guestConfigRef, { emails: arrayUnion(newGuestEmail) }, { merge: true })
+      setDoc(guestConfigRef, { emails: { [newGuestEmail]: true } }, { merge: true })
         .catch(() => {
           const permissionError = new FirestorePermissionError({
             path: guestConfigRef.path,
@@ -260,7 +260,7 @@ export default function Home() {
 
   const handleRemoveGuest = (emailToRemove: string) => {
     if (!guestConfigRef) return;
-    setDoc(guestConfigRef, { emails: arrayRemove(emailToRemove) }, { merge: true })
+    setDoc(guestConfigRef, { emails: { [emailToRemove]: deleteField() } }, { merge: true })
       .catch(() => {
         const permissionError = new FirestorePermissionError({
           path: guestConfigRef.path,
