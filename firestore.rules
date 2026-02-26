@@ -1,17 +1,13 @@
 /**
- * Core Philosophy: This ruleset enforces a strict private data model for owners,
- * with an exception for read-only guest access to analysis reports.
+ * Core Philosophy: This ruleset enforces a strict private data model where users can
+ * only access their own data.
  *
  * Data Structure: Each user's data is stored under `/users/{userId}`.
  *
  * Key Security Decisions:
- * - Private Data for Owners: A user can only read and write their own documents.
- * - Guest Access: A list of guest emails, stored in /config/guests, is granted 
- *   read-only (`get`, `list`) access to the `analysisReports` collection group, 
- *   allowing them to view all reports across all users. Guests cannot write any data.
- * - User Enumeration Prevention: Listing the top-level `/users` collection is
- *   disallowed.
- * - Admin-Managed Guest List: The guest list is managed by a single administrator, limited to 5 guests.
+ * - All data is private to the owner. A user can only read and write their own documents.
+ * - User enumeration is not allowed (listing `/users` is disallowed).
+ * - Document IDs in subcollections must match the parent `userId` for data integrity.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -29,47 +25,26 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    /**
-     * Checks if the signed-in user's email is in the guest list, which is
-     * dynamically fetched from the /config/guests document.
-     */
-    function isGuest() {
-      // First, check if the guest list document exists.
-      if (!exists(/databases/$(database)/documents/config/guests)) {
-        return false;
-      }
-      let guestData = get(/databases/$(database)/documents/config/guests).data;
-      // Check that the user is signed in, that guestData and the emails map exist, and the user's email is a key in the map.
-      return isSignedIn() &&
-             guestData.emails is map &&
-             request.auth.token.email in guestData.emails;
-    }
-
-    /**
-     * Checks if the user is the designated administrator.
-     * The UID should be that of the primary application owner.
-     */
-    function isAdmin() {
-      // This is the UID of the admin user 'samir2061chaudhary@gmail.com'
-      return request.auth.uid == '6fJoWzavlLcBvfLzrT8dWXzygMg1';
-    }
-
     function isExistingOwner(userId) {
       return isOwner(userId) && resource != null;
     }
-
+    
+    // Checks that the document's own `id` field matches the user's UID.
     function isValidUserDocOnCreate(userId) {
       return request.resource.data.id == userId;
     }
-
+    
+    // Ensures the immutable `id` field is not changed on update.
     function isValidUserDocOnUpdate() {
       return request.resource.data.id == resource.data.id;
     }
-
+    
+    // Checks that the subcollection document's `userId` field matches the user's UID.
     function isValidSubcollectionDocOnCreate(userId) {
       return request.resource.data.userId == userId;
     }
-
+    
+    // Ensures the immutable `userId` field is not changed on update.
     function isValidSubcollectionDocOnUpdate() {
       return request.resource.data.userId == resource.data.userId;
     }
@@ -80,8 +55,8 @@ service cloud.firestore {
     //-------------------------------------------------------------------------//
 
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if false;
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing all users.
       allow create: if isOwner(userId) && isValidUserDocOnCreate(userId);
       allow update: if isExistingOwner(userId) && isValidUserDocOnUpdate();
       allow delete: if isExistingOwner(userId);
@@ -100,31 +75,14 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
       allow delete: if isExistingOwner(userId);
     }
-
-    // Rules for analysisReports must allow guest reads.
+    
     match /users/{userId}/analysisReports/{analysisReportId} {
-      // Owners can read and list their own reports. Guests can also read (get) any report.
-      allow get, list: if isOwner(userId) || isGuest();
-      // Only owners can create, update, or delete their own reports.
+      allow get, list: if isOwner(userId);
       allow create: if isOwner(userId) && isValidSubcollectionDocOnCreate(userId);
       allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
       allow delete: if isExistingOwner(userId);
     }
-
-    // This collection group rule allows guests and the admin to list all reports across all users.
-    match /{path=**}/analysisReports/{reportId} {
-      allow get, list: if isGuest() || isAdmin();
-    }
-
-    // Rules for the global configuration document.
-    match /config/guests {
-      // Any signed-in user can read the guest list.
-      allow get: if isSignedIn();
-      // Only the designated admin can create or update the guest list.
-      // A maximum of 5 guests is allowed.
-      allow create, update: if isAdmin() && request.resource.data.emails.keys().size() <= 5;
-      // Only the admin can delete the document (not recommended).
-      allow delete: if isAdmin();
-    }
   }
 }
+
+    

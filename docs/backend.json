@@ -169,24 +169,6 @@
         "createdAt",
         "reportJson"
       ]
-    },
-    "GuestList": {
-      "title": "Guest List",
-      "description": "A document containing the list of guest user emails.",
-      "type": "object",
-      "properties": {
-        "emails": {
-          "type": "array",
-          "description": "An array of email addresses for guest users.",
-          "items": {
-            "type": "string",
-            "format": "email"
-          }
-        }
-      },
-      "required": [
-        "emails"
-      ]
     }
   },
   "auth": {
@@ -273,24 +255,10 @@
             }
           ]
         }
-      },
-      {
-        "path": "/config/{configId}",
-        "definition": {
-          "entityName": "GuestList",
-          "schema": {
-            "$ref": "#/backend/entities/GuestList"
-          },
-          "description": "Stores global application configuration. The primary document is 'guests', which contains the list of read-only guest user emails.",
-          "params": [
-            {
-              "name": "configId",
-              "description": "The ID of the configuration document (e.g., 'guests')."
-            }
-          ]
-        }
       }
     ],
     "reasoning": "The recommended Firestore structure for CareerMatch AI strictly adheres to the core design principles, prioritizing security, scalability, and debuggability. All user-specific data is organized under a top-level `/users/{userId}` collection, followed by subcollections for `resumes`, `jobDescriptions`, and `analysisReports`. This hierarchical, path-based ownership model is fundamental to the design.\n\n**Authorization Independence:** This structure achieves Authorization Independence by explicitly embedding the `userId` within the path of all user-owned documents (e.g., `/users/{userId}/resumes/{resumeId}`). This means that security rules can directly evaluate `request.auth.uid == userId` (where `userId` is the wildcard in the path) without needing to perform costly and complex `get()` operations on parent documents. The `userId` field is also present within the document payload as an additional integrity check, but the primary authorization context is provided by the path. This design enables atomic operations, such as creating a user's profile and their first resume in a single batched write, without running into authorization dependency issues.\n\n**QAPs (Secure List Operations):** The structure inherently supports Query As Permissions (QAPs) by ensuring that all documents within a given subcollection (e.g., `/users/{userId}/resumes`) share the exact same security requirements: they are private to the `userId` in the path. This allows for simple and efficient security rules like `allow list, read: if request.auth.uid == userId;`. A user can only `list` or `read` documents from their *own* `/users/{uid}/resumes` collection, making it impossible for them to accidentally or maliciously query another user's data. This segregation by ownership eliminates the need for complex, inefficient, or insecure query filters in security rules.\n\n**Structural Segregation & Access Modeling:** Each collection (`/users`, `/users/{userId}/resumes`, etc.) maintains a homogeneous security posture—all documents within are private and owned by the `userId` in the path. This simplifies rule writing significantly, as there's no mixing of public, private, or collaborative data within the same collection. The use of hierarchical paths for `User 1:N Entity` relationships (e.g., a User has many Resumes, Job Descriptions, and Analysis Reports) is consistently applied, making ownership explicit and rules straightforward. Wildcards are semantically named (`userId`, `resumeId`, `jobDescriptionId`, `analysisReportId`) for clarity and predictability."
   }
 }
+
+    

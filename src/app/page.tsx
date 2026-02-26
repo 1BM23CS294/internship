@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Eye, ShieldCheck } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -18,18 +18,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth, useUser, useFirestore, useCollection, useDoc, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
+import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, FirestorePermissionError, errorEmitter } from '@/firebase';
 import { redirect } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, collectionGroup, setDoc, deleteField } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { getScoreStyling } from '@/lib/theme';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { countries } from '@/lib/countries';
 import { Separator } from '@/components/ui/separator';
 import { HowToUse } from './components/how-to-use';
-import { Skeleton } from '@/components/ui/skeleton';
 
 function SubmitButton({ isSubmitting, step, setStep }: { isSubmitting: boolean; step: number; setStep: (step: number) => void; }) {
   const { pending } = useFormStatus();
@@ -85,7 +84,6 @@ export default function Home() {
   const [videoFileName, setVideoFileName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [newGuestEmail, setNewGuestEmail] = useState('');
 
   const formRef = useRef<HTMLFormElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null); 
@@ -93,42 +91,13 @@ export default function Home() {
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
-
-  const guestConfigRef = useMemoFirebase(() => {
-    if (!firestore) return null;
-    return doc(firestore, 'config', 'guests');
-  }, [firestore]);
-
-  const { data: guestConfigDoc, isLoading: isLoadingGuests } = useDoc(guestConfigRef);
-
-  const userRole = useMemo<'admin' | 'guest' | 'member' | 'loading'>(() => {
-    if (isUserLoading || isLoadingGuests) {
-      return 'loading';
-    }
-    // This UID is from the firestore.rules file for the isAdmin() function.
-    if (user?.uid === '6fJoWzavlLcBvfLzrT8dWXzygMg1') {
-      return 'admin';
-    }
-    if (user?.email && guestConfigDoc?.emails && (user.email.toLowerCase() in guestConfigDoc.emails)) {
-      return 'guest';
-    }
-    return 'member';
-  }, [user, isUserLoading, guestConfigDoc, isLoadingGuests]);
   
-  const historyTitle = (userRole === 'admin' || userRole === 'guest') ? 'Public Analysis Feed' : 'Analysis History';
-  const isGuestListFull = useMemo(() => (guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails).length >= 5 : false), [guestConfigDoc]);
-
   const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
   const reportsQuery = useMemoFirebase(() => {
-    if (!user || !firestore || userRole === 'loading') return null;
-    
-    if (userRole === 'admin' || userRole === 'guest') {
-        return query(collectionGroup(firestore, 'analysisReports'), orderBy('createdAt', 'desc'));
-    }
-    
+    if (!user || !firestore) return null;
     return query(collection(firestore, 'users', user.uid, 'analysisReports'), orderBy('createdAt', 'desc'));
-  }, [firestore, user, userRole]);
+  }, [firestore, user]);
 
 
   const { data: savedReports, isLoading: isLoadingReports, error: reportsError } = useCollection(reportsQuery);
@@ -157,7 +126,16 @@ export default function Home() {
             createdAt: serverTimestamp(),
             reportJson: JSON.stringify(newCandidate),
           };
-          addDoc(collection(firestore, 'users', user.uid, 'analysisReports'), newReport);
+          
+          const reportsCollectionRef = collection(firestore, 'users', user.uid, 'analysisReports');
+          addDoc(reportsCollectionRef, newReport).catch((error) => {
+             const permissionError = new FirestorePermissionError({
+                path: reportsCollectionRef.path,
+                operation: 'create',
+                requestResourceData: newReport,
+            });
+            errorEmitter.emit('permission-error', permissionError);
+          });
 
           setSelectedCandidate(newCandidate);
           toast({
@@ -183,10 +161,6 @@ export default function Home() {
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (userRole === 'guest') {
-      toast({ title: 'Guest Mode', description: 'Guests cannot submit new analyses.', variant: 'destructive' });
-      return;
-    }
     const formData = new FormData(e.currentTarget);
     
     const jobDesc = formData.get('jobDescription') as string;
@@ -209,7 +183,14 @@ export default function Home() {
     if(!user || !firestore || user.uid !== ownerId) return;
 
     const docRef = doc(firestore, 'users', ownerId, 'analysisReports', reportId);
-    deleteDoc(docRef);
+    
+    deleteDoc(docRef).catch((error) => {
+        const permissionError = new FirestorePermissionError({
+            path: docRef.path,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+    });
     
     const deletedCandidate = candidates.find(c => c.firestoreId === reportId);
     if (selectedCandidate && deletedCandidate && selectedCandidate.id === deletedCandidate.id) {
@@ -230,61 +211,6 @@ export default function Home() {
   const handleHistoryClick = (candidate: AnalyzedCandidate) => {
       setSelectedCandidate(candidate);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
-  };
-
-  const handleAddGuest = () => {
-    if (!guestConfigRef) return;
-    if (isGuestListFull) {
-        toast({
-            title: 'Guest List Full',
-            description: 'You can only have a maximum of 5 guests.',
-            variant: 'destructive',
-        });
-        return;
-    }
-    const normalizedEmail = newGuestEmail.trim().toLowerCase();
-    const currentGuestEmails = guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails).map(e => e.toLowerCase()) : [];
-
-    if (normalizedEmail && !currentGuestEmails.includes(normalizedEmail) && normalizedEmail.includes('@')) {
-      setDoc(guestConfigRef, { emails: { [normalizedEmail]: true } }, { merge: true })
-        .catch(() => {
-          const permissionError = new FirestorePermissionError({
-            path: guestConfigRef.path,
-            operation: 'update',
-            requestResourceData: { emails: `add ${normalizedEmail}` },
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
-
-      setNewGuestEmail('');
-      toast({
-        title: 'Guest Added',
-        description: `${normalizedEmail} will now have guest access.`,
-      });
-    } else {
-      toast({
-        title: 'Invalid or Duplicate Email',
-        description: 'Please enter a valid, unique email address that is not already on the list.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleRemoveGuest = (emailToRemove: string) => {
-    if (!guestConfigRef) return;
-    setDoc(guestConfigRef, { emails: { [emailToRemove.toLowerCase()]: deleteField() } }, { merge: true })
-      .catch(() => {
-        const permissionError = new FirestorePermissionError({
-          path: guestConfigRef.path,
-          operation: 'update',
-          requestResourceData: { emails: `remove ${emailToRemove}` },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      });
-    toast({
-      title: 'Guest Removed',
-      description: `${emailToRemove} no longer has guest access.`,
-    });
   };
 
   const renderMainPanelContent = () => {
@@ -309,144 +235,129 @@ export default function Home() {
   return (
      <div className="relative min-h-svh w-full p-4 md:p-6 lg:p-8">
         <div className="max-w-screen-2xl mx-auto space-y-6">
-            
             <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
-                <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
-                    <CardHeader className="bg-black/20 rounded-t-lg">
-                        <div className="flex items-center justify-between">
-                            <h1 className="text-xl font-bold">Intelligent Resume Analyzer</h1>
-                            <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                    <AvatarImage src={user.photoURL ?? undefined} />
-                                    <AvatarFallback>{getInitials(user.displayName || user.email || 'U')}</AvatarFallback>
-                                </Avatar>
-                                <Button variant="ghost" size="icon" onClick={handleSignOut} className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                                    <LogOut size={16}/>
-                                </Button>
-                            </div>
-                        </div>
-                        <div className="pt-2 space-y-2">
-                          <CardDescription>A multi-step AI-powered analysis of your candidates.</CardDescription>
-                          {userRole === 'guest' ? (
-                            <Badge variant="secondary" className='border-amber-500/50 text-amber-400'>
-                              <Eye className="mr-2 h-4 w-4" /> Guest Mode: Read-Only
-                            </Badge>
-                          ) : userRole === 'admin' ? (
-                            <Badge variant="destructive" className='border-red-500/50 text-red-400'>
-                                <ShieldCheck className="mr-2 h-4 w-4" /> Administrator Mode
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal">
-                                <Languages className="mr-2 h-4 w-4" />
-                                Now with Multi-Language Support
-                            </Badge>
-                          )}
-                        </div>
-                    </CardHeader>
-                    <CardContent className="flex-grow pt-6">
-                        {(userRole === 'admin' || userRole === 'member') ? (
-                          <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
-                            <div className={cn("space-y-4", step !== 1 && "hidden")}>
-                                  <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
-                                  <div className="space-y-2">
-                                      <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
-                                      <Textarea id="job-description" name="jobDescription" placeholder="Paste the job description here..." className="min-h-[120px] bg-black/20 border-border/50" required />
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                          <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
-                                          <Input id="resume-file" name="resumeFile" type="file" onChange={(e) => setResumeFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
-                                          <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
-                                              {resumeFileName ? <span className="truncate text-primary">{resumeFileName}</span> : 'Select a resume file...'}
-                                          </Button>
-                                      </div>
-                                      <div className="space-y-2">
-                                          <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
-                                          <Select name="country" required onValueChange={setSelectedCountry}>
-                                              <SelectTrigger className="w-full bg-black/20 border-border/50"><SelectValue placeholder="Select a country..." /></SelectTrigger>
-                                              <SelectContent>{countries.map(country => (<SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>))}</SelectContent>
-                                          </Select>
-                                      </div>
-                                  </div>
-                            </div>
-
-                            <div className={cn("space-y-6", step !== 2 && "hidden")}>
-                                <h2 className='text-lg font-semibold text-primary'>Step 2: Advanced Analysis</h2>
-                                
-                                <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
-                                  <Label className='flex items-center gap-2 text-base'><Video size={18} /> AI Video Feedback <Badge variant="secondary" className="ml-2">Beta</Badge></Label>
-                                  <p className='text-sm text-muted-foreground'>Upload a video resume to get feedback on facial expressions, voice confidence, and more. (Optional, up to 50MB)</p>
-                                  <div className="flex items-center space-x-2">
-                                      <Checkbox id="analyze-video" name="analyzeVideo" />
-                                      <Label htmlFor="analyze-video" className='text-muted-foreground grow'>Enable Video Analysis</Label>
-                                  </div>
-                                  <Input id="video-file" name="videoFile" type="file" onChange={(e) => setVideoFileName(e.target.files?.[0]?.name || '')} className="hidden" accept="video/*"/>
-                                    <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
-                                        {videoFileName ? <span className="truncate text-primary">{videoFileName}</span> : 'Select a video file...'}
+                <div className="space-y-6">
+                    <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
+                        <CardHeader className="bg-black/20 rounded-t-lg">
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-xl font-bold">Intelligent Resume Analyzer</h1>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={user.photoURL ?? undefined} />
+                                        <AvatarFallback>{getInitials(user.displayName || user.email || 'U')}</AvatarFallback>
+                                    </Avatar>
+                                    <Button variant="ghost" size="icon" onClick={handleSignOut} className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                                        <LogOut size={16}/>
                                     </Button>
                                 </div>
-                                
-                                <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
-                                  <Label className='flex items-center gap-2 text-base'><Lightbulb size={18} /> Additional Insights</Label>
-                                  <p className='text-sm text-muted-foreground'>Select additional AI-powered reports to generate.</p>
-                                  <div className="flex items-center space-x-2">
-                                      <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
-                                      <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground grow'>
-                                          <DollarSign size={16} />
-                                          <span>Salary Prediction</span>
-                                          {selectedCurrency && (<Badge variant="outline" className="border-primary/50 text-primary/90 font-normal ml-auto">{selectedCurrency}</Badge>)}
-                                      </Label>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                      <Checkbox id="predict-work-life" name="predictWorkLife" defaultChecked={true} />
-                                      <Label htmlFor="predict-work-life" className='flex items-center gap-2 text-muted-foreground grow'><Clock size={16} />Work-Life Balance Predictor</Label>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                      <Checkbox id="find-networking" name="findNetworking" defaultChecked={true} />
-                                      <Label htmlFor="find-networking" className='flex items-center gap-2 text-muted-foreground grow'><Users size={16} />Networking Opportunity Finder</Label>
-                                  </div>
-                                  <div className="flex items-center space-x-2">
-                                      <Checkbox id="rewrite-resume" name="rewriteResume" defaultChecked={true} />
-                                      <Label htmlFor="rewrite-resume" className='flex items-center gap-2 text-muted-foreground grow'><PenSquare size={16} />Resume Rewriter</Label>
-                                  </div>
-                                </div>
                             </div>
-                              <Separator/>
-                              <div className="pt-2 flex gap-4">
-                                  {step === 2 && (
-                                      <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
-                                          <ArrowLeft className="mr-2 h-4 w-4" /> Back
-                                      </Button>
-                                  )}
-                                  <SubmitButton isSubmitting={isSubmitting} step={step} setStep={setStep} />
-                              </div>
-                          </form>
-                        ) : userRole === 'guest' ? (
-                          <div className="flex flex-col items-center justify-center text-center h-full p-8">
-                            <Eye className="w-16 h-16 text-primary/50 mb-4" />
-                            <h3 className="text-xl font-semibold">Guest Mode</h3>
-                            <p className="text-muted-foreground max-w-sm">
-                              You are viewing in read-only mode. You can browse all public analysis reports but cannot submit new ones.
-                            </p>
-                          </div>
-                        ) : (
-                           <div className="flex flex-col items-center justify-center text-center h-full p-8">
-                                <Loader2 className="w-12 h-12 text-primary/50 mb-4 animate-spin" />
-                                <h3 className="text-xl font-semibold">Verifying Access...</h3>
-                           </div>
-                        )}
-                    </CardContent>
-                </Card>
+                            <div className="pt-2 space-y-2">
+                              <CardDescription>A multi-step AI-powered analysis of your candidates.</CardDescription>
+                                <Badge variant="outline" className="border-primary/50 text-primary/90 font-normal">
+                                    <Languages className="mr-2 h-4 w-4" />
+                                    Now with Multi-Language Support
+                                </Badge>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow pt-6">
+                            <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-4">
+                                <div className={cn("space-y-4", step !== 1 && "hidden")}>
+                                      <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
+                                      <div className="space-y-2">
+                                          <Label htmlFor="job-description" className='flex items-center gap-2'><FileText size={16} /> Job Description</Label>
+                                          <Textarea id="job-description" name="jobDescription" placeholder="Paste the job description here..." className="min-h-[120px] bg-black/20 border-border/50" required />
+                                      </div>
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          <div className="space-y-2">
+                                              <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
+                                              <Input id="resume-file" name="resumeFile" type="file" onChange={(e) => setResumeFileName(e.target.files?.[0]?.name || '')} className="hidden" required accept=".pdf,.doc,.docx"/>
+                                              <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
+                                                  {resumeFileName ? <span className="truncate text-primary">{resumeFileName}</span> : 'Select a resume file...'}
+                                              </Button>
+                                          </div>
+                                          <div className="space-y-2">
+                                              <Label htmlFor="country" className='flex items-center gap-2'><Globe size={16} /> Country</Label>
+                                              <Select name="country" required onValueChange={setSelectedCountry}>
+                                                  <SelectTrigger className="w-full bg-black/20 border-border/50"><SelectValue placeholder="Select a country..." /></SelectTrigger>
+                                                  <SelectContent>{countries.map(country => (<SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>))}</SelectContent>
+                                              </Select>
+                                          </div>
+                                      </div>
+                                </div>
+
+                                <div className={cn("space-y-6", step !== 2 && "hidden")}>
+                                    <h2 className='text-lg font-semibold text-primary'>Step 2: Advanced Analysis</h2>
+                                    
+                                    <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
+                                      <Label className='flex items-center gap-2 text-base'><Video size={18} /> AI Video Feedback <Badge variant="secondary" className="ml-2">Beta</Badge></Label>
+                                      <p className='text-sm text-muted-foreground'>Upload a video resume to get feedback on facial expressions, voice confidence, and more. (Optional, up to 50MB)</p>
+                                      <div className="flex items-center space-x-2">
+                                          <Checkbox id="analyze-video" name="analyzeVideo" />
+                                          <Label htmlFor="analyze-video" className='text-muted-foreground grow'>Enable Video Analysis</Label>
+                                      </div>
+                                      <Input id="video-file" name="videoFile" type="file" onChange={(e) => setVideoFileName(e.target.files?.[0]?.name || '')} className="hidden" accept="video/*"/>
+                                        <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
+                                            {videoFileName ? <span className="truncate text-primary">{videoFileName}</span> : 'Select a video file...'}
+                                        </Button>
+                                    </div>
+                                    
+                                    <div className="p-4 rounded-lg border border-border/50 bg-black/20 space-y-4">
+                                      <Label className='flex items-center gap-2 text-base'><Lightbulb size={18} /> Additional Insights</Label>
+                                      <p className='text-sm text-muted-foreground'>Select additional AI-powered reports to generate.</p>
+                                      <div className="flex items-center space-x-2">
+                                          <Checkbox id="predict-salary" name="predictSalary" defaultChecked={true} />
+                                          <Label htmlFor="predict-salary" className='flex items-center gap-2 text-muted-foreground grow'>
+                                              <DollarSign size={16} />
+                                              <span>Salary Prediction</span>
+                                              {selectedCurrency && (<Badge variant="outline" className="border-primary/50 text-primary/90 font-normal ml-auto">{selectedCurrency}</Badge>)}
+                                          </Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                          <Checkbox id="predict-work-life" name="predictWorkLife" defaultChecked={true} />
+                                          <Label htmlFor="predict-work-life" className='flex items-center gap-2 text-muted-foreground grow'><Clock size={16} />Work-Life Balance Predictor</Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                          <Checkbox id="find-networking" name="findNetworking" defaultChecked={true} />
+                                          <Label htmlFor="find-networking" className='flex items-center gap-2 text-muted-foreground grow'><Users size={16} />Networking Opportunity Finder</Label>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                          <Checkbox id="rewrite-resume" name="rewriteResume" defaultChecked={true} />
+                                          <Label htmlFor="rewrite-resume" className='flex items-center gap-2 text-muted-foreground grow'><PenSquare size={16} />Resume Rewriter</Label>
+                                      </div>
+                                    </div>
+                                </div>
+                                  <Separator/>
+                                  <div className="pt-2 flex gap-4">
+                                      {step === 2 && (
+                                          <Button type="button" variant="outline" onClick={() => setStep(1)} className="w-1/3">
+                                              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+                                          </Button>
+                                      )}
+                                      <SubmitButton isSubmitting={isSubmitting} step={step} setStep={setStep} />
+                                  </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                    <div ref={resultsRef} className="mt-6">
+                        <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col overflow-hidden min-h-[500px]">
+                            <CardContent className="p-0 flex-grow">
+                               <div className='p-6 min-h-[500px] flex flex-col justify-center'>
+                                 {renderMainPanelContent()}
+                               </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
 
                 <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col">
                     <CardHeader className='flex-row items-center justify-between pb-4'>
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> {historyTitle}</CardTitle>
+                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
                     </CardHeader>
                     <CardContent className="w-full flex-grow overflow-hidden">
-                        <ScrollArea className="h-full pr-4 max-h-[500px]">
-                        {(isLoadingReports || userRole === 'loading') ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
+                        <ScrollArea className="h-full pr-4 max-h-[calc(100vh-180px)]">
+                        {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
                             <div className='h-full flex flex-col items-center justify-center text-center p-4 text-destructive'>
-                                <p className="text-sm font-semibold">Error Loading Feed</p>
+                                <p className="text-sm font-semibold">Error Loading History</p>
                                 <p className="text-xs break-words">{reportsError.message}</p>
                             </div>
                         ) : candidates.length > 0 ? (
@@ -489,87 +400,20 @@ export default function Home() {
                             </ul>
                             ) : (
                             <div className='h-full flex flex-col items-center justify-center text-center p-4'>
-                                <p className="text-sm text-muted-foreground">{ (userRole === 'admin' || userRole === 'guest') ? 'No public analyses found.' : 'Your past analyses will appear here.'}</p>
+                                <p className="text-sm text-muted-foreground">Your past analyses will appear here.</p>
                             </div>
                             )}
                         </ScrollArea>
                     </CardContent>
                 </Card>
             </div>
-
-            <div ref={resultsRef}>
-                <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col overflow-hidden min-h-[500px]">
-                    <CardContent className="p-0 flex-grow">
-                       <div className='p-6 min-h-[500px] flex flex-col justify-center'>
-                         {renderMainPanelContent()}
-                       </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div>
+            
+            <div className="lg:col-span-2">
               <HowToUse />
             </div>
-            
-            {userRole === 'admin' && (
-            <div>
-              <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users size={18} /> Guest Access
-                  </CardTitle>
-                  <CardDescription>
-                    Allow specific users read-only access to all analysis reports. Guests cannot create new analyses or delete reports.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                   <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2 text-muted-foreground">Manage Guest List</h4>
-                      <div className="flex gap-2">
-                        <Input 
-                          type="email" 
-                          placeholder={isGuestListFull ? "Guest list is full" : "guest@example.com"}
-                          value={newGuestEmail}
-                          onChange={(e) => setNewGuestEmail(e.target.value)}
-                          className="bg-black/20 border-border/50"
-                          disabled={isLoadingGuests || isGuestListFull}
-                        />
-                        <Button onClick={handleAddGuest} disabled={isLoadingGuests || isGuestListFull}>
-                          {isLoadingGuests && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Add Guest
-                        </Button>
-                      </div>
-                      {isGuestListFull && <p className="text-xs text-amber-500 mt-2">The guest list is full. A maximum of 5 guests are allowed.</p>}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 text-muted-foreground">Current Guests ({guestConfigDoc?.emails ? Object.keys(guestConfigDoc.emails).length : 0}/5)</h4>
-                      {isLoadingGuests ? (
-                        <div className="space-y-2">
-                          <Skeleton className="h-9 w-full" />
-                          <Skeleton className="h-9 w-full" />
-                        </div>
-                      ) : guestConfigDoc?.emails && Object.keys(guestConfigDoc.emails).length > 0 ? (
-                        <ul className="space-y-2">
-                          {Object.keys(guestConfigDoc.emails).map(email => (
-                            <li key={email} className="flex items-center justify-between p-2 rounded-md bg-black/20">
-                              <span className="text-sm text-foreground/80">{email}</span>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveGuest(email)}>
-                                <Trash2 size={16} />
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-muted-foreground text-center py-4">There are currently no guest users.</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-            )}
         </div>
     </div>
   );
 }
+
+    
