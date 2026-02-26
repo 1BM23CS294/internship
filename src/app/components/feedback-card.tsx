@@ -38,8 +38,8 @@ export function FeedbackCard({ className }: { className?: string }) {
   return (
     <Card className={cn("bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col", className)}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-          <Star size={18} /> Website Feedback
+        <CardTitle className="flex items-center gap-2 text-xl font-bold">
+          <Star size={22} /> Website Feedback
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col flex-grow">
