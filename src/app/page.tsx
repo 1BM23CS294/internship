@@ -32,7 +32,6 @@ import { HowToUse } from './components/how-to-use';
 import { RoadmapCard } from './components/roadmap-card';
 import { FeedbackCard } from './components/feedback-card';
 import { analyzeResume } from '@/app/actions';
-import { FeedbackDisplayCard } from './components/feedback-display-card';
 
 
 function SubmitButton({ step, setStep, isPending }: { step: number; setStep: (step: number) => void; isPending: boolean; }) {
@@ -445,7 +444,7 @@ export default function Home() {
                         <HowToUse />
                     </div>
                     <div className="space-y-6">
-                        <FeedbackDisplayCard />
+                        
                         <FeedbackCard />
                     </div>
                 </div>
