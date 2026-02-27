@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, FileText, Sparkles, Flame, Search, TrendingDown, GitCompareArrows, School, Fingerprint, AlertTriangle, Briefcase, DollarSign, PenSquare, RefreshCw } from 'lucide-react';
+import { Bot, FileText, Sparkles, Flame, Search, TrendingDown, GitCompareArrows, School, Fingerprint, AlertTriangle, Briefcase, DollarSign, PenSquare, RefreshCw, Medal, Users, Filter, Globe, Ship, FileJson } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const features = [
@@ -65,6 +65,36 @@ const features = [
     title: 'AI Resume Rewriter',
     icon: <PenSquare className="w-8 h-8 text-primary" />,
     description: 'Rewrites the resume in three different professional styles: ATS-Friendly (for machines), Creative (for humans), and Executive (for leaders).',
+  },
+  {
+    title: 'Candidate Ranking',
+    icon: <Medal className="w-8 h-8 text-primary" />,
+    description: 'Ranks a candidate against a simulated pool of other applicants, providing a percentile score to gauge their competitiveness.',
+  },
+  {
+    title: 'Team Benchmarking',
+    icon: <Users className="w-8 h-8 text-primary" />,
+    description: 'Analyzes how a candidate\'s skills would complement or fill gaps in an existing team, based on a simulated team profile.',
+  },
+  {
+    title: 'Hiring Funnel Insights',
+    icon: <Filter className="w-8 h-8 text-primary" />,
+    description: 'Generates predictions for time-to-hire and cost-per-hire, along with tips to optimize the recruitment process for the role.',
+  },
+  {
+    title: 'Country-Specific Rules',
+    icon: <Globe className="w-8 h-8 text-primary" />,
+    description: 'Provides essential resume formatting and content guidelines for different countries, such as Germany, Japan, and the UK.',
+  },
+  {
+    title: 'Visa Sponsorship Readiness',
+    icon: <Ship className="w-8 h-8 text-primary" />,
+    description: 'Assesses the likelihood that a candidate\'s profile would be eligible for work visa sponsorship in a target country.',
+  },
+  {
+    title: 'Resume Export',
+    icon: <FileJson className="w-8 h-8 text-primary" />,
+    description: 'Generates mock download links for the resume in various formats, such as standard PDF, Europass XML, and JSON Resume.',
   },
 ];
 
