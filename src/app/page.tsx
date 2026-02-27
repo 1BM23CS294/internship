@@ -32,12 +32,10 @@ import { HowToUse } from './components/how-to-use';
 import { RoadmapCard } from './components/roadmap-card';
 import { FeedbackCard } from './components/feedback-card';
 import { analyzeResume } from '@/app/actions';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormState } from 'react-dom';
 
 
-function SubmitButton({ step, setStep }: { step: number; setStep: (step: number) => void; }) {
-  const { pending } = useFormStatus();
-
+function SubmitButton({ step, setStep, isPending }: { step: number; setStep: (step: number) => void; isPending: boolean; }) {
   if (step === 1) {
     return (
       <Button type="button" onClick={() => setStep(2)} className="w-full">
@@ -47,8 +45,8 @@ function SubmitButton({ step, setStep }: { step: number; setStep: (step: number)
   }
 
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
+    <Button type="submit" disabled={isPending} className="w-full">
+      {isPending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Analyzing...
@@ -358,7 +356,7 @@ export default function Home() {
                                               <ArrowLeft className="mr-2 h-4 w-4" /> Back
                                           </Button>
                                       )}
-                                      <SubmitButton step={step} setStep={setStep} />
+                                      <SubmitButton step={step} setStep={setStep} isPending={isPending} />
                                   </div>
                             </form>
                         </CardContent>

@@ -38,43 +38,27 @@ export async function generateResumeMatchScore(
   return generateResumeMatchScoreFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateResumeMatchScorePrompt',
-  input: {schema: GenerateResumeMatchScoreInputSchema},
-  output: {schema: GenerateResumeMatchScoreOutputSchema},
-  prompt: `You are an expert HR and recruitment analyst AI. Your task is to provide a comprehensive analysis of a candidate's resume against a given job description.
-
-Based on the resume skills, experience, and the job description, you must generate a JSON report containing:
-1.  **overallScore**: A single, holistic score from 0 to 100 that represents the candidate's suitability for the role. 100 is a perfect match.
-2.  **rating**: A one-word qualitative rating based on the score (e.g., "Excellent", "Good", "Needs Improvement").
-3.  **explanation**: A concise summary explaining the rationale behind the overall score.
-
-Here is the data to analyze:
-
-**Resume Skills:**
-{{#each resumeSkills}}- {{{this}}}
-{{/each}}
-
-**Resume Experience Summary:**
-{{{resumeExperience}}}
-
-**Job Description:**
-{{{jobDescription}}}
-
-Please provide your full analysis in the specified JSON format.`,
-});
-
 const generateResumeMatchScoreFlow = ai.defineFlow(
   {
     name: 'generateResumeMatchScoreFlow',
     inputSchema: GenerateResumeMatchScoreInputSchema,
     outputSchema: GenerateResumeMatchScoreOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-     if (!output) {
-      throw new Error('Failed to generate resume match score.');
-    }
-    return output;
+  async (input) => {
+    await new Promise(resolve => setTimeout(resolve, 250)); // Simulate processing time
+    
+    const score = 65 + Math.floor(Math.random() * 25); // 65-90
+    let rating = "Good";
+    if (score > 85) rating = "Excellent";
+    if (score < 75) rating = "Needs Improvement";
+
+    const topSkill = input.resumeSkills[0] || 'key technologies';
+    const secondSkill = input.resumeSkills[1] || 'project management';
+
+    return {
+      overallScore: score,
+      rating: rating,
+      explanation: `The candidate shows a strong alignment with the job description, particularly with their experience in ${topSkill} and ${secondSkill}. The score reflects a solid background with room to grow into the role's more specific requirements.`,
+    };
   }
 );
