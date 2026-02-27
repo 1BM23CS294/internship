@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound, Rocket, Medal, Files, Filter } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -333,6 +333,39 @@ export default function Home() {
                                              <div className="flex items-center space-x-2"><Checkbox id="skill-obsolescence-warning" name="skillObsolescenceWarning" defaultChecked={true} /><Label htmlFor="skill-obsolescence-warning" className='flex items-center gap-2 text-muted-foreground'><AlertTriangle size={16}/>Skill Obsolescence Warning</Label></div>
                                              <div className="flex items-center space-x-2"><Checkbox id="resume-version-control" name="resumeVersionControl" defaultChecked={true} /><Label htmlFor="resume-version-control" className='flex items-center gap-2 text-muted-foreground'><GitCompareArrows size={16}/>AI Resume Versioning</Label></div>
                                              <div className="flex items-center space-x-2"><Checkbox id="internship-readiness" name="internshipReadiness" defaultChecked={true} /><Label htmlFor="internship-readiness" className='flex items-center gap-2 text-muted-foreground'><School size={16}/>Internship Readiness Score</Label></div>
+                                        </CardContent>
+                                    </Card>
+                                    
+                                    <Card className="p-4 border-dashed border-border/50 bg-black/20">
+                                        <CardHeader className='p-0 pb-4'>
+                                            <CardTitle className='flex items-center gap-2 text-base'><Rocket size={18}/> Enterprise Modules (Coming Soon)</CardTitle>
+                                            <CardDescription className='text-sm text-muted-foreground'>Advanced features for teams and organizations.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className='p-0 grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                            <div className="flex items-center space-x-2 opacity-50">
+                                                <Checkbox id="candidate-ranking" disabled />
+                                                <Label htmlFor="candidate-ranking" className='flex items-center gap-2 text-muted-foreground'>
+                                                    <Medal size={16}/>Candidate Ranking
+                                                </Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2 opacity-50">
+                                                <Checkbox id="bulk-analysis" disabled />
+                                                <Label htmlFor="bulk-analysis" className='flex items-center gap-2 text-muted-foreground'>
+                                                    <Files size={16}/>Bulk Resume Analysis
+                                                </Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2 opacity-50">
+                                                <Checkbox id="team-benchmarking" disabled />
+                                                <Label htmlFor="team-benchmarking" className='flex items-center gap-2 text-muted-foreground'>
+                                                    <Users size={16}/>Team Benchmarking
+                                                </Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2 opacity-50">
+                                                <Checkbox id="hiring-funnel" disabled />
+                                                <Label htmlFor="hiring-funnel" className='flex items-center gap-2 text-muted-foreground'>
+                                                    <Filter size={16}/>Hiring Funnel Insights
+                                                </Label>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </div>
