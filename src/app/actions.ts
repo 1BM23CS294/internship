@@ -43,34 +43,34 @@ const AnalyzeResumeSchema = z.object({
   analysisMode: z.enum(['normal', 'fresher', 'executive']).default('normal'),
 
   // Optional Analyses (Original)
-  predictSalary: z.coerce.boolean().default(true),
-  analyzeVideo: z.coerce.boolean().default(false),
+  shouldPredictSalary: z.coerce.boolean().default(true),
+  shouldAnalyzeVideo: z.coerce.boolean().default(false),
   videoFile: fileSchema.refine(file => file.size < 50 * 1024 * 1024, 'Video file size must be less than 50MB.').optional(),
-  predictWorkLife: z.coerce.boolean().default(true),
-  findNetworking: z.coerce.boolean().default(true),
-  rewriteResume: z.coerce.boolean().default(true),
+  shouldPredictWorkLife: z.coerce.boolean().default(true),
+  shouldFindNetworking: z.coerce.boolean().default(true),
+  shouldRewriteResume: z.coerce.boolean().default(true),
 
   // New Analysis Modules
-  roastResume: z.coerce.boolean().default(true),
-  confidenceBooster: z.coerce.boolean().default(true),
-  personalBrandCheck: z.coerce.boolean().default(true),
-  hiddenStrengthDiscovery: z.coerce.boolean().default(true),
-  careerRiskAssessment: z.coerce.boolean().default(true),
-  skillObsolescenceWarning: z.coerce.boolean().default(true),
-  resumeVersionControl: z.coerce.boolean().default(true),
-  internshipReadiness: z.coerce.boolean().default(true),
+  shouldRoastResume: z.coerce.boolean().default(true),
+  shouldBoostConfidence: z.coerce.boolean().default(true),
+  shouldCheckPersonalBrand: z.coerce.boolean().default(true),
+  shouldDiscoverHiddenStrengths: z.coerce.boolean().default(true),
+  shouldAssessCareerRisk: z.coerce.boolean().default(true),
+  shouldWarnSkillObsolescence: z.coerce.boolean().default(true),
+  shouldControlResumeVersion: z.coerce.boolean().default(true),
+  shouldAssessInternshipReadiness: z.coerce.boolean().default(true),
 
   // Enterprise Modules
-  candidateRanking: z.coerce.boolean().default(true),
-  teamBenchmarking: z.coerce.boolean().default(true),
-  hiringFunnelInsights: z.coerce.boolean().default(true),
+  shouldRankCandidate: z.coerce.boolean().default(true),
+  shouldBenchmarkTeam: z.coerce.boolean().default(true),
+  shouldGetHiringFunnelInsights: z.coerce.boolean().default(true),
 
   // International
-  getResumeExports: z.coerce.boolean().default(true),
-  getCountryRules: z.coerce.boolean().default(true),
-  assessVisa: z.coerce.boolean().default(true),
+  shouldGetResumeExports: z.coerce.boolean().default(true),
+  shouldGetCountryRules: z.coerce.boolean().default(true),
+  shouldAssessVisa: z.coerce.boolean().default(true),
 }).superRefine((data, ctx) => {
-  if (data.analyzeVideo && !data.videoFile) {
+  if (data.shouldAnalyzeVideo && !data.videoFile) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["videoFile"],
@@ -101,26 +101,26 @@ async function _analyzeSingleResume(
 ): Promise<AnalyzedCandidate> {
     const {
         analysisMode,
-        predictSalary,
-        analyzeVideo,
+        shouldPredictSalary,
+        shouldAnalyzeVideo,
         videoFile,
-        predictWorkLife,
-        findNetworking,
-        rewriteResume: shouldRewriteResume,
-        roastResume: shouldRoast,
-        confidenceBooster: shouldBoost,
-        personalBrandCheck: shouldCheckBrand,
-        hiddenStrengthDiscovery: shouldDiscoverStrengths,
-        careerRiskAssessment: shouldAssessRisk,
-        skillObsolescenceWarning: shouldWarnSkills,
-        resumeVersionControl: shouldVersion,
-        internshipReadiness: shouldAssessInternship,
-        candidateRanking,
-        teamBenchmarking,
-        hiringFunnelInsights,
-        getResumeExports: shouldGetResumeExports,
-        getCountryRules: shouldGetCountryRules,
-        assessVisa: shouldAssessVisa,
+        shouldPredictWorkLife,
+        shouldFindNetworking,
+        shouldRewriteResume,
+        shouldRoastResume,
+        shouldBoostConfidence,
+        shouldCheckPersonalBrand,
+        shouldDiscoverHiddenStrengths,
+        shouldAssessCareerRisk,
+        shouldWarnSkillObsolescence,
+        shouldControlResumeVersion,
+        shouldAssessInternshipReadiness,
+        shouldRankCandidate,
+        shouldBenchmarkTeam,
+        shouldGetHiringFunnelInsights,
+        shouldGetResumeExports,
+        shouldGetCountryRules,
+        shouldAssessVisa,
     } = options;
 
     const fileToDataUri = async (file: File) => {
@@ -150,7 +150,7 @@ async function _analyzeSingleResume(
 
     // 3. Set up all analysis promises to run in parallel
     let videoAnalysisPromise: Promise<VideoAnalysisOutput | null>;
-    if (analyzeVideo && videoFile) {
+    if (shouldAnalyzeVideo && videoFile) {
         videoAnalysisPromise = fileToDataUri(videoFile)
             .then(uri => analyzeVideoResume({ videoDataUri: uri }));
     } else {
@@ -174,10 +174,10 @@ async function _analyzeSingleResume(
         generateCareerPersonalityProfile({ resumeSummary: resumeFullTextForProfiling }),
 
         // Standard Modules
-        predictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
+        shouldPredictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
         videoAnalysisPromise,
-        predictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
-        findNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
+        shouldPredictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
+        shouldFindNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
         
         // Resume Rewriter
         ...(shouldRewriteResume ? [
@@ -187,19 +187,19 @@ async function _analyzeSingleResume(
         ] : [Promise.resolve(null), Promise.resolve(null), Promise.resolve(null)]),
 
         // New Analysis Modules
-        shouldRoast ? roastResume({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldBoost ? confidenceBooster({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldCheckBrand ? personalBrandCheck({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldDiscoverStrengths ? hiddenStrengthDiscovery({ resumeExperience: resumeExperienceSummary, resumeSkills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldAssessRisk ? careerRiskAssessment({ jobTitle: extractedInfo.experience[0]?.title || 'Unknown', industry: 'General', skills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldWarnSkills ? skillObsolescenceWarning({ skills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldVersion ? resumeVersionControl({ resumeSummary: extractedInfo.summary || '', jobDescription }) : Promise.resolve(null),
-        (shouldAssessInternship || analysisMode === 'fresher') ? internshipReadiness({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        shouldRoastResume ? roastResume({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        shouldBoostConfidence ? confidenceBooster({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        shouldCheckPersonalBrand ? personalBrandCheck({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        shouldDiscoverHiddenStrengths ? hiddenStrengthDiscovery({ resumeExperience: resumeExperienceSummary, resumeSkills: extractedInfo.skills }) : Promise.resolve(null),
+        shouldAssessCareerRisk ? careerRiskAssessment({ jobTitle: extractedInfo.experience[0]?.title || 'Unknown', industry: 'General', skills: extractedInfo.skills }) : Promise.resolve(null),
+        shouldWarnSkillObsolescence ? skillObsolescenceWarning({ skills: extractedInfo.skills }) : Promise.resolve(null),
+        shouldControlResumeVersion ? resumeVersionControl({ resumeSummary: extractedInfo.summary || '', jobDescription }) : Promise.resolve(null),
+        (shouldAssessInternshipReadiness || analysisMode === 'fresher') ? internshipReadiness({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
         
         // Enterprise Modules
-        candidateRanking ? rankCandidate({ jobDescription }) : Promise.resolve(null),
-        teamBenchmarking ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
-        hiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
+        shouldRankCandidate ? rankCandidate({ jobDescription }) : Promise.resolve(null),
+        shouldBenchmarkTeam ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
+        shouldGetHiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
 
         // International & Export
         shouldGetResumeExports ? getResumeExports({ resumeData: JSON.stringify(extractedInfo) }) : Promise.resolve(null),
@@ -255,16 +255,37 @@ async function _analyzeSingleResume(
 export async function analyzeResume(prevState: FormState, formData: FormData): Promise<FormState> {
   const allEntries = Object.fromEntries(formData.entries());
   
-  const dataToValidate: Record<string, any> = {
-      ...allEntries,
+   const dataToValidate: Record<string, any> = {
+      jobDescription: allEntries.jobDescription,
       resumeFiles: formData.getAll('resumeFile').filter(f => f instanceof File && f.size > 0),
+      country: allEntries.country,
+      analysisMode: allEntries.analysisMode,
+      shouldPredictSalary: allEntries.predictSalary,
+      shouldAnalyzeVideo: allEntries.analyzeVideo,
+      shouldPredictWorkLife: allEntries.predictWorkLife,
+      shouldFindNetworking: allEntries.findNetworking,
+      shouldRewriteResume: allEntries.rewriteResume,
+      shouldRoastResume: allEntries.roastResume,
+      shouldBoostConfidence: allEntries.confidenceBooster,
+      shouldCheckPersonalBrand: allEntries.personalBrandCheck,
+      shouldDiscoverHiddenStrengths: allEntries.hiddenStrengthDiscovery,
+      shouldAssessCareerRisk: allEntries.careerRiskAssessment,
+      shouldWarnSkillObsolescence: allEntries.skillObsolescenceWarning,
+      shouldControlResumeVersion: allEntries.resumeVersionControl,
+      shouldAssessInternshipReadiness: allEntries.internshipReadiness,
+      shouldRankCandidate: allEntries.candidateRanking,
+      shouldBenchmarkTeam: allEntries.teamBenchmarking,
+      shouldGetHiringFunnelInsights: allEntries.hiringFunnelInsights,
+      shouldGetResumeExports: allEntries.getResumeExports,
+      shouldGetCountryRules: allEntries.getCountryRules,
+      shouldAssessVisa: allEntries.assessVisa,
   };
 
   // Zod's `optional` doesn't handle empty File objects from forms well.
   // Pre-process to remove videoFile if it's not a valid, uploaded file.
   const videoFile = formData.get('videoFile');
-  if (!(videoFile instanceof File) || videoFile.size === 0) {
-    delete dataToValidate.videoFile;
+  if (videoFile instanceof File && videoFile.size > 0) {
+    dataToValidate.videoFile = videoFile;
   }
   
   const validatedFields = AnalyzeResumeSchema.safeParse(dataToValidate);
