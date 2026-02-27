@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useEffect, useRef, useMemo, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound, Rocket, Medal, Files, Filter, Github, Linkedin, Building2, FileJson, Laptop, MessageSquare, Ship, Link as LinkIcon } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound, Rocket, Medal, Files, Filter, FileJson, Ship } from 'lucide-react';
 import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -344,7 +344,7 @@ export default function Home() {
                                     
                                     <Card className="p-4 border-border/50 bg-black/20">
                                         <CardHeader className='p-0 pb-4'>
-                                            <CardTitle className='flex items-center gap-2 text-base'><Rocket size={18}/> Enterprise & Team Features</CardTitle>
+                                            <CardTitle className='flex items-center gap-2 text-base'><Rocket size={18}/> Enterprise Modules</CardTitle>
                                         </CardHeader>
                                         <CardContent className='p-0 grid grid-cols-1 sm:grid-cols-2 gap-4'>
                                             <div className="flex items-center space-x-2"><Checkbox id="candidate-ranking" name="candidateRanking" /><Label htmlFor="candidate-ranking" className='flex items-center gap-2 text-muted-foreground'><Medal size={16}/>Candidate Ranking</Label></div>
@@ -355,30 +355,12 @@ export default function Home() {
 
                                     <Card className="p-4 border-border/50 bg-black/20">
                                         <CardHeader className='p-0 pb-4'>
-                                            <CardTitle className='flex items-center gap-2 text-base'><Globe size={18}/> Integrations & International Analysis</CardTitle>
+                                            <CardTitle className='flex items-center gap-2 text-base'><Globe size={18}/> International & Export Features</CardTitle>
                                         </CardHeader>
-                                        <CardContent className='p-0 grid grid-cols-1 gap-4'>
-                                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                                                <div className="flex items-center space-x-2"><Checkbox id="extract-github" name="extractGithub" /><Label htmlFor="extract-github" className='flex items-center gap-2 text-muted-foreground grow'><Github size={16}/>GitHub Analysis</Label></div>
-                                                <Input name="githubUrl" placeholder="GitHub profile URL..." className="bg-black/20 border-border/50"/>
-                                                <div className="flex items-center space-x-2"><Checkbox id="sync-linkedin" name="syncLinkedin" /><Label htmlFor="sync-linkedin" className='flex items-center gap-2 text-muted-foreground grow'><Linkedin size={16}/>LinkedIn Sync</Label></div>
-                                                <Input name="linkedinUrl" placeholder="LinkedIn profile URL..." className="bg-black/20 border-border/50"/>
-                                                <div className="flex items-center space-x-2"><Checkbox id="analyze-kaggle" name="analyzeKaggle" /><Label htmlFor="analyze-kaggle" className='flex items-center gap-2 text-muted-foreground grow'><BrainCircuit size={16}/>Kaggle Analysis</Label></div>
-                                                <Input name="kaggleUrl" placeholder="Kaggle profile URL..." className="bg-black/20 border-border/50"/>
-                                                <div className="flex items-center space-x-2"><Checkbox id="analyze-portfolio" name="analyzePortfolio" /><Label htmlFor="analyze-portfolio" className='flex items-center gap-2 text-muted-foreground grow'><Laptop size={16}/>Portfolio Website</Label></div>
-                                                <Input name="portfolioUrl" placeholder="Portfolio website URL..." className="bg-black/20 border-border/50"/>
-                                                 <div className="flex items-center space-x-2"><Checkbox id="optimize-freelance" name="optimizeFreelance" /><Label htmlFor="optimize-freelance" className='flex items-center gap-2 text-muted-foreground grow'><TrendingUp size={16}/>Freelance Profile</Label></div>
-                                                <Input name="freelanceUrl" placeholder="Upwork, Fiverr URL..." className="bg-black/20 border-border/50"/>
-                                                <div className="flex items-center space-x-2"><Checkbox id="get-glassdoor-fit" name="getGlassdoorFit" /><Label htmlFor="get-glassdoor-fit" className='flex items-center gap-2 text-muted-foreground grow'><Building2 size={16}/>Glassdoor Fit</Label></div>
-                                                <Input name="glassdoorCompany" placeholder="Company name for Glassdoor..." className="bg-black/20 border-border/50"/>
-                                            </div>
-                                             <Separator />
-                                            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                                                <div className="flex items-center space-x-2"><Checkbox id="get-interview-exp" name="getInterviewExperience" /><Label htmlFor="get-interview-exp" className='flex items-center gap-2 text-muted-foreground'><MessageSquare size={16}/>Interview Experience</Label></div>
-                                                <div className="flex items-center space-x-2"><Checkbox id="get-country-rules" name="getCountryRules" defaultChecked={true} /><Label htmlFor="get-country-rules" className='flex items-center gap-2 text-muted-foreground'><Globe size={16}/>Country-Specific Rules</Label></div>
-                                                <div className="flex items-center space-x-2"><Checkbox id="assess-visa" name="assessVisa" defaultChecked={true} /><Label htmlFor="assess-visa" className='flex items-center gap-2 text-muted-foreground'><Ship size={16}/>Visa Sponsorship Readiness</Label></div>
-                                                <div className="flex items-center space-x-2"><Checkbox id="get-resume-exports" name="getResumeExports" defaultChecked={true} /><Label htmlFor="get-resume-exports" className='flex items-center gap-2 text-muted-foreground'><FileJson size={16}/>Resume Export Formats</Label></div>
-                                            </div>
+                                        <CardContent className='p-0 grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                                            <div className="flex items-center space-x-2"><Checkbox id="get-country-rules" name="getCountryRules" defaultChecked={true} /><Label htmlFor="get-country-rules" className='flex items-center gap-2 text-muted-foreground'><Globe size={16}/>Country-Specific Rules</Label></div>
+                                            <div className="flex items-center space-x-2"><Checkbox id="assess-visa" name="assessVisa" defaultChecked={true} /><Label htmlFor="assess-visa" className='flex items-center gap-2 text-muted-foreground'><Ship size={16}/>Visa Sponsorship Readiness</Label></div>
+                                            <div className="flex items-center space-x-2"><Checkbox id="get-resume-exports" name="getResumeExports" defaultChecked={true} /><Label htmlFor="get-resume-exports" className='flex items-center gap-2 text-muted-foreground'><FileJson size={16}/>Resume Export Formats</Label></div>
                                         </CardContent>
                                     </Card>
                                 </div>

@@ -21,13 +21,6 @@ import {
   rankCandidate,
   benchmarkCandidate,
   getHiringFunnelInsights,
-  extractGithubSkills,
-  syncLinkedInProfile,
-  analyzeKaggleProfile,
-  analyzePortfolioWebsite,
-  optimizeFreelanceProfile,
-  getGlassdoorCompanyFit,
-  getInterviewExperience,
   getResumeExports,
   getCountryResumeRules,
   assessVisaSponsorship,
@@ -71,21 +64,7 @@ const AnalyzeResumeSchema = z.object({
   teamBenchmarking: z.coerce.boolean().default(false),
   hiringFunnelInsights: z.coerce.boolean().default(false),
 
-  // Integrations & International
-  githubUrl: z.string().url().optional().or(z.literal('')),
-  linkedinUrl: z.string().url().optional().or(z.literal('')),
-  kaggleUrl: z.string().url().optional().or(z.literal('')),
-  portfolioUrl: z.string().url().optional().or(z.literal('')),
-  freelanceUrl: z.string().url().optional().or(z.literal('')),
-  glassdoorCompany: z.string().optional(),
-  
-  extractGithub: z.coerce.boolean().default(false),
-  syncLinkedin: z.coerce.boolean().default(false),
-  analyzeKaggle: z.coerce.boolean().default(false),
-  analyzePortfolio: z.coerce.boolean().default(false),
-  optimizeFreelance: z.coerce.boolean().default(false),
-  getGlassdoorFit: z.coerce.boolean().default(false),
-  getInterviewExperience: z.coerce.boolean().default(false),
+  // International
   getResumeExports: z.coerce.boolean().default(false),
   getCountryRules: z.coerce.boolean().default(false),
   assessVisa: z.coerce.boolean().default(false),
@@ -101,11 +80,6 @@ type FormState = {
     resumeFiles?: string[];
     country?: string[];
     videoFile?: string[];
-    githubUrl?: string[];
-    linkedinUrl?: string[];
-    kaggleUrl?: string[];
-    portfolioUrl?: string[];
-    freelanceUrl?: string[];
     _form?: string[];
   };
 };
@@ -135,20 +109,7 @@ async function _analyzeSingleResume(
         candidateRanking,
         teamBenchmarking,
         hiringFunnelInsights,
-        // Integrations & International
-        githubUrl,
-        linkedinUrl,
-        kaggleUrl,
-        portfolioUrl,
-        freelanceUrl,
-        glassdoorCompany,
-        extractGithub,
-        syncLinkedin,
-        analyzeKaggle,
-        analyzePortfolio,
-        optimizeFreelance,
-        getGlassdoorFit,
-        getInterviewExperience,
+        // International
         getResumeExports,
         getCountryRules,
         assessVisa,
@@ -218,14 +179,7 @@ async function _analyzeSingleResume(
         candidateRanking ? rankCandidate({ overallScore: analysis.overallScore }) : Promise.resolve(null),
         teamBenchmarking ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
         hiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
-        // Integrations & International
-        (extractGithub && githubUrl) ? extractGithubSkills({ githubUrl }) : Promise.resolve(null),
-        (syncLinkedin && linkedinUrl) ? syncLinkedInProfile({ linkedinUrl }) : Promise.resolve(null),
-        (analyzeKaggle && kaggleUrl) ? analyzeKaggleProfile({ kaggleUrl }) : Promise.resolve(null),
-        (analyzePortfolio && portfolioUrl) ? analyzePortfolioWebsite({ portfolioUrl }) : Promise.resolve(null),
-        (optimizeFreelance && freelanceUrl) ? optimizeFreelanceProfile({ freelanceProfileUrl: freelanceUrl, resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        (getGlassdoorFit && glassdoorCompany) ? getGlassdoorCompanyFit({ companyName: glassdoorCompany }) : Promise.resolve(null),
-        (getInterviewExperience && glassdoorCompany) ? getInterviewExperience({ companyName: glassdoorCompany, jobTitle: extractedInfo.experience[0]?.title || 'Engineer' }) : Promise.resolve(null),
+        // International
         getResumeExports ? getResumeExports({ resumeData: JSON.stringify(extractedInfo) }) : Promise.resolve(null),
         getCountryRules ? getCountryResumeRules({ country }) : Promise.resolve(null),
         assessVisa ? assessVisaSponsorship({ country, jobTitle: extractedInfo.experience[0]?.title || 'Engineer', skills: extractedInfo.skills }) : Promise.resolve(null),
@@ -237,7 +191,7 @@ async function _analyzeSingleResume(
         atsRewrite, creativeRewrite, executiveRewrite,
         roast, confidenceReport, brandCheck, hiddenStrengths, riskAssessment, skillWarning, versionSuggestion, internshipReport,
         ranking, benchmark, funnelInsights,
-        githubSkills, linkedinSync, kaggleAnalysis, portfolioAnalysis, freelanceOptimization, glassdoorFit, interviewExperience, resumeExports, countryRules, visaSponsorship,
+        resumeExports, countryRules, visaSponsorship,
     ] = await Promise.all(allOtherPromises);
     
     if (!recommendations) throw new Error('Hiring recommendations failed to generate.');
@@ -265,14 +219,7 @@ async function _analyzeSingleResume(
       ranking: ranking || undefined,
       benchmark: benchmark || undefined,
       funnelInsights: funnelInsights || undefined,
-      // Integrations & International
-      githubSkills: githubSkills || undefined,
-      linkedinSync: linkedinSync || undefined,
-      kaggleAnalysis: kaggleAnalysis || undefined,
-      portfolioAnalysis: portfolioAnalysis || undefined,
-      freelanceOptimization: freelanceOptimization || undefined,
-      glassdoorFit: glassdoorFit || undefined,
-      interviewExperience: interviewExperience || undefined,
+      // International
       resumeExports: resumeExports || undefined,
       countryRules: countryRules || undefined,
       visaSponsorship: visaSponsorship || undefined,
