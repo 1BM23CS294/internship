@@ -94,9 +94,9 @@ type FormState = {
 };
 
 async function _analyzeSingleResume(
-    resumeFile: File, 
-    jobDescription: string, 
-    country: string, 
+    resumeFile: File,
+    jobDescription: string,
+    country: string,
     options: Omit<z.infer<typeof AnalyzeResumeSchema>, 'resumeFiles' | 'jobDescription' | 'country'>
 ): Promise<AnalyzedCandidate> {
     const {
@@ -126,127 +126,113 @@ async function _analyzeSingleResume(
     const fileToDataUri = async (file: File) => {
         const fileBuffer = await file.arrayBuffer();
         return `data:${file.type};base64,${Buffer.from(fileBuffer).toString('base64')}`;
-    }
+    };
 
-    // 1. Convert resume to data URI
-    const resumeDataUri = await fileToDataUri(resumeFile);
-
-    // 2. Start core analysis, with specific error handling for parsing
+    // 1. Core Extraction (Critical Path)
     let extractedInfo;
     try {
+        const resumeDataUri = await fileToDataUri(resumeFile);
         extractedInfo = await extractResumeInformation({ resumeDataUri });
     } catch (e) {
         console.error("Error during extractResumeInformation:", e);
-        // This is a critical failure point. Provide a detailed error message.
-        throw new Error(`The AI failed to read the resume '${resumeFile.name}'. The file may be corrupted, password-protected, or in an unsupported format. Please try another file.`);
+        throw new Error(`The AI failed to read the resume '${resumeFile.name}'. The file may be corrupted or in an unsupported format.`);
     }
 
     if (!extractedInfo || !extractedInfo.name) {
-       throw new Error(`Could not parse resume '${resumeFile.name}'. The AI could not find key details like the candidate's name. Please ensure the file is a valid and clearly structured resume.`);
+        throw new Error(`Could not parse resume '${resumeFile.name}'. Please ensure the file is a valid and clearly structured resume.`);
     }
-    
+
     const resumeExperienceSummary = extractedInfo.summary || extractedInfo.experience.map(exp => `${exp.title} at ${exp.company}: ${exp.description}`).join('\n');
     const resumeFullTextForProfiling = `${extractedInfo.summary || ''}\n\nSkills: ${extractedInfo.skills.join(', ')}\n\nExperience:\n${resumeExperienceSummary}`;
 
-    // 3. Set up all analysis promises to run in parallel
-    let videoAnalysisPromise: Promise<VideoAnalysisOutput | null>;
-    if (shouldAnalyzeVideo && videoFile) {
-        videoAnalysisPromise = fileToDataUri(videoFile)
-            .then(uri => analyzeVideoResume({ videoDataUri: uri }));
-    } else {
-        videoAnalysisPromise = Promise.resolve(null);
-    }
-    
-    const allPromises = [
-        // Core Analyses
+    // 2. Core Analysis (Critical Path)
+    // These must succeed for a meaningful report.
+    const [analysis, recommendations, personalityProfile] = await Promise.all([
         generateResumeMatchScore({ resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, jobDescription }),
         generateHiringRecommendations({
             parsedResume: {
                 name: extractedInfo.name,
                 email: extractedInfo.email,
                 skills: extractedInfo.skills,
-                experience: extractedInfo.experience.map(e => ({...e, description: e.description || ''})),
+                experience: extractedInfo.experience.map(e => ({ ...e, description: e.description || '' })),
                 education: extractedInfo.education,
                 summary: extractedInfo.summary,
             },
             jobDescription,
         }),
         generateCareerPersonalityProfile({ resumeSummary: resumeFullTextForProfiling }),
+    ]);
 
-        // Standard Modules
-        shouldPredictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
-        videoAnalysisPromise,
-        shouldPredictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
-        shouldFindNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
-        
-        // Resume Rewriter
-        ...(shouldRewriteResume ? [
-            rewriteResume({ style: 'ats', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
-            rewriteResume({ style: 'creative', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
-            rewriteResume({ style: 'executive', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
-        ] : [Promise.resolve(null), Promise.resolve(null), Promise.resolve(null)]),
-
-        // New Analysis Modules
-        shouldRoastResume ? roastResume({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldBoostConfidence ? confidenceBooster({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldCheckPersonalBrand ? personalBrandCheck({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        shouldDiscoverHiddenStrengths ? hiddenStrengthDiscovery({ resumeExperience: resumeExperienceSummary, resumeSkills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldAssessCareerRisk ? careerRiskAssessment({ jobTitle: extractedInfo.experience[0]?.title || 'Unknown', industry: 'General', skills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldWarnSkillObsolescence ? skillObsolescenceWarning({ skills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldControlResumeVersion ? resumeVersionControl({ resumeSummary: extractedInfo.summary || '', jobDescription }) : Promise.resolve(null),
-        (shouldAssessInternshipReadiness || analysisMode === 'fresher') ? internshipReadiness({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        
-        // Enterprise Modules
-        shouldRankCandidate ? rankCandidate({ jobDescription }) : Promise.resolve(null),
-        shouldBenchmarkTeam ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
-        shouldGetHiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
-
-        // International & Export
-        shouldGetResumeExports ? getResumeExports({ resumeData: JSON.stringify(extractedInfo) }) : Promise.resolve(null),
-        shouldGetCountryRules ? getCountryResumeRules({ country }) : Promise.resolve(null),
-        shouldAssessVisa ? assessVisaSponsorship({ country, jobTitle: extractedInfo.experience[0]?.title || 'Engineer', skills: extractedInfo.skills }) : Promise.resolve(null),
-    ];
-
-    // 4. Await all promises
-    const [
-        analysis, recommendations, personalityProfile,
-        salaryPrediction, videoAnalysis, workLifeBalance, networking,
-        atsRewrite, creativeRewrite, executiveRewrite,
-        roast, confidenceReport, brandCheck, hiddenStrengths, riskAssessment, skillWarning, versionSuggestion, internshipReport,
-        ranking, benchmark, funnelInsights,
-        resumeExports, countryRules, visaSponsorship,
-    ] = await Promise.all(allPromises);
+    if (!analysis || !recommendations || !personalityProfile) {
+        throw new Error("Core AI analysis modules failed to generate a result.");
+    }
     
-    if (!analysis) throw new Error('Core analysis failed to generate a score.');
-    if (!recommendations) throw new Error('Hiring recommendations failed to generate.');
+    // 3. Optional Modules (Non-Critical Path)
+    // These run in parallel and won't fail the entire analysis if one errors out.
+    const optionalModulePromises = {
+        salaryPrediction: shouldPredictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
+        videoAnalysis: (shouldAnalyzeVideo && videoFile) ? fileToDataUri(videoFile).then(uri => analyzeVideoResume({ videoDataUri: uri })) : Promise.resolve(null),
+        workLifeBalance: shouldPredictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
+        networking: shouldFindNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
+        atsRewrite: shouldRewriteResume ? rewriteResume({ style: 'ats', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }) : Promise.resolve(null),
+        creativeRewrite: shouldRewriteResume ? rewriteResume({ style: 'creative', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }) : Promise.resolve(null),
+        executiveRewrite: shouldRewriteResume ? rewriteResume({ style: 'executive', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }) : Promise.resolve(null),
+        roast: shouldRoastResume ? roastResume({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        confidenceReport: shouldBoostConfidence ? confidenceBooster({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        brandCheck: shouldCheckPersonalBrand ? personalBrandCheck({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        hiddenStrengths: shouldDiscoverHiddenStrengths ? hiddenStrengthDiscovery({ resumeExperience: resumeExperienceSummary, resumeSkills: extractedInfo.skills }) : Promise.resolve(null),
+        riskAssessment: shouldAssessCareerRisk ? careerRiskAssessment({ jobTitle: extractedInfo.experience[0]?.title || 'Unknown', industry: 'General', skills: extractedInfo.skills }) : Promise.resolve(null),
+        skillWarning: shouldWarnSkillObsolescence ? skillObsolescenceWarning({ skills: extractedInfo.skills }) : Promise.resolve(null),
+        versionSuggestion: shouldControlResumeVersion ? resumeVersionControl({ resumeSummary: extractedInfo.summary || '', jobDescription }) : Promise.resolve(null),
+        internshipReport: (shouldAssessInternshipReadiness || analysisMode === 'fresher') ? internshipReadiness({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
+        ranking: shouldRankCandidate ? rankCandidate({ jobDescription }) : Promise.resolve(null),
+        benchmark: shouldBenchmarkTeam ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
+        funnelInsights: shouldGetHiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
+        resumeExports: shouldGetResumeExports ? getResumeExports({ resumeData: JSON.stringify(extractedInfo) }) : Promise.resolve(null),
+        countryRules: shouldGetCountryRules ? getCountryResumeRules({ country }) : Promise.resolve(null),
+        visaSponsorship: shouldAssessVisa ? assessVisaSponsorship({ country, jobTitle: extractedInfo.experience[0]?.title || 'Engineer', skills: extractedInfo.skills }) : Promise.resolve(null),
+    };
 
-    // 5. Assemble final result
+    const settledResults = await Promise.allSettled(Object.values(optionalModulePromises));
+    
+    const optionalResults = Object.keys(optionalModulePromises).reduce((acc, key, index) => {
+        const result = settledResults[index];
+        if (result.status === 'fulfilled') {
+            acc[key as keyof typeof optionalModulePromises] = result.value;
+        } else {
+            console.error(`Optional analysis module '${key}' failed:`, result.reason);
+            acc[key as keyof typeof optionalModulePromises] = null; // Assign null if promise rejected
+        }
+        return acc;
+    }, {} as { [K in keyof typeof optionalModulePromises]: any });
+    
+    // 4. Assemble Final Result
     const result: AnalyzedCandidate = {
-      id: crypto.randomUUID(),
-      fileName: resumeFile.name,
-      candidate: extractedInfo,
-      analysis,
-      recommendations,
-      personalityProfile,
-      salaryPrediction: salaryPrediction || undefined,
-      videoAnalysis: videoAnalysis || undefined,
-      workLifeBalance: workLifeBalance || undefined,
-      networking: networking || undefined,
-      resumeRewrite: (atsRewrite && creativeRewrite && executiveRewrite) ? { ats: atsRewrite as RewriteResumeOutput, creative: creativeRewrite as RewriteResumeOutput, executive: executiveRewrite as RewriteResumeOutput } : undefined,
-      roast: roast || undefined,
-      confidenceReport: confidenceReport || undefined,
-      brandCheck: brandCheck || undefined,
-      hiddenStrengths: hiddenStrengths || undefined,
-      riskAssessment: riskAssessment || undefined,
-      skillWarning: skillWarning || undefined,
-      versionSuggestion: versionSuggestion || undefined,
-      internshipReport: internshipReport || undefined,
-      ranking: ranking || undefined,
-      benchmark: benchmark || undefined,
-      funnelInsights: funnelInsights || undefined,
-      resumeExports: resumeExports || undefined,
-      countryRules: countryRules || undefined,
-      visaSponsorship: visaSponsorship || undefined,
+        id: crypto.randomUUID(),
+        fileName: resumeFile.name,
+        candidate: extractedInfo,
+        analysis,
+        recommendations,
+        personalityProfile,
+        salaryPrediction: optionalResults.salaryPrediction || undefined,
+        videoAnalysis: optionalResults.videoAnalysis || undefined,
+        workLifeBalance: optionalResults.workLifeBalance || undefined,
+        networking: optionalResults.networking || undefined,
+        resumeRewrite: (optionalResults.atsRewrite && optionalResults.creativeRewrite && optionalResults.executiveRewrite) ? { ats: optionalResults.atsRewrite, creative: optionalResults.creativeRewrite, executive: optionalResults.executiveRewrite } : undefined,
+        roast: optionalResults.roast || undefined,
+        confidenceReport: optionalResults.confidenceReport || undefined,
+        brandCheck: optionalResults.brandCheck || undefined,
+        hiddenStrengths: optionalResults.hiddenStrengths || undefined,
+        riskAssessment: optionalResults.riskAssessment || undefined,
+        skillWarning: optionalResults.skillWarning || undefined,
+        versionSuggestion: optionalResults.versionSuggestion || undefined,
+        internshipReport: optionalResults.internshipReport || undefined,
+        ranking: optionalResults.ranking || undefined,
+        benchmark: optionalResults.benchmark || undefined,
+        funnelInsights: optionalResults.funnelInsights || undefined,
+        resumeExports: optionalResults.resumeExports || undefined,
+        countryRules: optionalResults.countryRules || undefined,
+        visaSponsorship: optionalResults.visaSponsorship || undefined,
     };
     return result;
 }
