@@ -78,9 +78,10 @@ export default function Home() {
   const [videoFileName, setVideoFileName] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
 
+  const [isPending, startTransition] = useTransition();
+
   const initialState = { success: false, message: '', data: undefined, errors: undefined };
   const [formState, formAction] = useFormState(analyzeResume, initialState);
-  const { pending } = useFormStatus();
 
   const formRef = useRef<HTMLFormElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
@@ -148,14 +149,14 @@ export default function Home() {
         setResumeFileNames([]);
         setVideoFileName('');
         setStep(1);
-    } else if (!formState.success && formState.message && !pending && formRef.current?.dataset.submitted) {
+    } else if (!formState.success && formState.message && !isPending && formRef.current?.dataset.submitted) {
          toast({
             title: 'Analysis Failed',
             description: formState.errors?._form?.[0] || formState.message,
             variant: 'destructive',
         });
     }
-  }, [formState, pending, user, reportsCollection, toast]);
+  }, [formState, isPending, user, reportsCollection, toast]);
 
   const handleDeleteReport = (reportId: string, ownerId: string) => {
     if(!user || !firestore || user.uid !== ownerId) return;
@@ -193,7 +194,7 @@ export default function Home() {
   };
 
   const renderMainPanelContent = () => {
-    if (pending) {
+    if (isPending) {
       return <AnalysisLoading />;
     }
     if (selectedCandidate) {
@@ -222,7 +223,9 @@ export default function Home() {
         return;
     }
     if(formRef.current) formRef.current.dataset.submitted = "true";
-    formAction(formData);
+    startTransition(() => {
+        formAction(formData);
+    });
   }
 
   return (
