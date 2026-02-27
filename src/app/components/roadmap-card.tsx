@@ -1,31 +1,56 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Network, MessageCircle, Files, TrendingUp, Mail, Rocket } from 'lucide-react';
+import { LayoutDashboard, School, Files, Users, Code, Palette, AreaChart, Filter, Medal, Rocket } from 'lucide-react';
 
 const roadmapFeatures = [
   {
-    title: 'Real-time LinkedIn Profile Analysis',
-    description: 'Analyze profile strength and consistency with the uploaded resume.',
-    icon: <Network className="w-6 h-6 text-primary" />,
+    title: 'Recruiter Dashboard',
+    description: 'A dedicated dashboard for recruiters to manage candidates and track analysis history.',
+    icon: <LayoutDashboard className="w-6 h-6 text-primary" />,
   },
   {
-    title: 'Interactive Interview Prep',
-    description: 'Run mock interview sessions with AI-driven feedback and tailored questions.',
-    icon: <MessageCircle className="w-6 h-6 text-primary" />,
+    title: 'University Placement Mode',
+    description: 'Specialized tools for university career centers to help students prepare for job placements.',
+    icon: <School className="w-6 h-6 text-primary" />,
   },
   {
-    title: 'Multi-Resume Management',
-    description: 'Store and manage different versions of resumes for various job applications.',
+    title: 'Bulk Resume Analysis',
+    description: 'Upload and analyze multiple resumes at once to quickly screen a batch of candidates.',
     icon: <Files className="w-6 h-6 text-primary" />,
   },
   {
-    title: 'Job Market Trend Analysis',
-    description: 'Get insights into which skills are currently in high demand in specific industries.',
-    icon: <TrendingUp className="w-6 h-6 text-primary" />,
+    title: 'Team Resume Benchmarking',
+    description: 'Compare the skills and experience across your existing team to identify strengths and gaps.',
+    icon: <Users className="w-6 h-6 text-primary" />,
   },
   {
-    title: 'Cover Letter Generator',
-    description: 'Automatically create a tailored cover letter based on the resume and job description.',
-    icon: <Mail className="w-6 h-6 text-primary" />,
+    title: 'API for Job Portals',
+    description: 'Integrate our powerful analysis engine directly into your own job board or HR software.',
+    icon: <Code className="w-6 h-6 text-primary" />,
+  },
+  {
+    title: 'White-label Version for Colleges',
+    description: 'Offer a branded version of the analyzer to your students as part of your career services.',
+    icon: <Palette className="w-6 h-6 text-primary" />,
+  },
+  {
+    title: 'Resume Analytics for Companies',
+    description: 'Gain insights from aggregated resume data to understand your talent pool better.',
+    icon: <AreaChart className="w-6 h-6 text-primary" />,
+  },
+  {
+    title: 'Hiring Funnel Optimization',
+    description: 'Get AI-driven insights on how to improve your hiring funnel and reduce time-to-hire.',
+    icon: <Filter className="w-6 h-6 text-primary" />,
+  },
+  {
+    title: 'Candidate Ranking System',
+    description: 'Automatically rank candidates based on their match score and custom criteria.',
+    icon: <Medal className="w-6 h-6 text-primary" />,
+  },
+  {
+    title: 'Screening Automation for Startups',
+    description: 'A streamlined, fast, and affordable screening solution designed for startups.',
+    icon: <Rocket className="w-6 h-6 text-primary" />,
   },
 ];
 
