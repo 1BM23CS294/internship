@@ -311,7 +311,7 @@ export default function Home() {
             setVideoFileName('');
             setStep(1);
 
-        }, 2500); // 2.5 second delay to feel realistic
+        }, 3500); // 3.5 second delay to feel realistic
     });
   };
 
@@ -590,5 +590,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
