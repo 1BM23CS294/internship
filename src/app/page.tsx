@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo, useTransition, useActionState } from 'react';
+import { useState, useEffect, useRef, useMemo, useTransition } from 'react';
+import { useActionState } from 'react';
 import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound, Rocket, Medal, Files, Filter, FileJson, Ship } from 'lucide-react';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
@@ -32,6 +33,7 @@ import { HowToUse } from './components/how-to-use';
 import { RoadmapCard } from './components/roadmap-card';
 import { FeedbackCard } from './components/feedback-card';
 import { analyzeResume } from '@/app/actions';
+import { GuestAccessCard } from './components/guest-access-card';
 
 
 function SubmitButton({ step, setStep, isPending }: { step: number; setStep: (step: number) => void; isPending: boolean; }) {
@@ -436,6 +438,7 @@ export default function Home() {
                             </ScrollArea>
                         </CardContent>
                     </Card>
+                    <GuestAccessCard />
                     <FeedbackCard />
                 </div>
             </div>
