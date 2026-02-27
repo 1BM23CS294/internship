@@ -122,6 +122,25 @@ export default function Home() {
   
   useEffect(() => {
     if (formState.success && formState.data && formState.data.length > 0) {
+        // Save the new analysis reports to Firestore
+        if (reportsCollection && user) {
+            formState.data.forEach(candidate => {
+                const reportData = {
+                    reportJson: JSON.stringify(candidate),
+                    createdAt: serverTimestamp(),
+                    userId: user.uid,
+                };
+                addDoc(reportsCollection, reportData).catch((error) => {
+                    const permissionError = new FirestorePermissionError({
+                        path: reportsCollection.path,
+                        operation: 'create',
+                        requestResourceData: reportData,
+                    });
+                    errorEmitter.emit('permission-error', permissionError);
+                });
+            });
+        }
+        
         setSelectedCandidate(formState.data[0]);
         resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
         toast({ title: "Analysis Complete", description: formState.message });
@@ -136,7 +155,7 @@ export default function Home() {
             variant: 'destructive',
         });
     }
-  }, [formState, pending]);
+  }, [formState, pending, user, reportsCollection, toast]);
 
   const handleDeleteReport = (reportId: string, ownerId: string) => {
     if(!user || !firestore || user.uid !== ownerId) return;
