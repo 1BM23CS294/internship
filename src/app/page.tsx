@@ -227,64 +227,7 @@ export default function Home() {
   return (
      <div className="relative min-h-svh w-full p-4 md:p-6 lg:p-8">
         <div className="max-w-screen-2xl mx-auto space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-[400px,1fr] gap-6">
-                <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col">
-                    <CardHeader className='flex-row items-center justify-between pb-4'>
-                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
-                    </CardHeader>
-                    <CardContent className="w-full flex-grow overflow-hidden">
-                        <ScrollArea className="h-full pr-4 max-h-[calc(100vh-180px)]">
-                        {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
-                            <div className='h-full flex flex-col items-center justify-center text-center p-4 text-destructive'>
-                                <p className="text-sm font-semibold">Error Loading History</p>
-                                <p className="text-xs break-words">{reportsError.message}</p>
-                            </div>
-                        ) : candidates.length > 0 ? (
-                            <ul className="space-y-2">
-                                {candidates.map((c) => (
-                                <li key={c.id}>
-                                    <div className="relative group/item">
-                                        <button
-                                            onClick={() => handleHistoryClick(c)}
-                                            className={cn(
-                                                "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 border",
-                                                selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
-                                            )}>
-                                            <div className="p-2 bg-muted rounded-md">
-                                            <Bot className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
-                                            </div>
-                                            <div className="flex-1 overflow-hidden">
-                                                <p className="font-semibold truncate">{c.candidate.name}</p>
-                                                <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
-                                            </div>
-                                            <div className={cn("font-semibold text-lg", getScoreStyling(c.analysis.overallScore).color)}>
-                                                <span>{c.analysis.overallScore.toFixed(0)}</span>
-                                                <span className="text-sm text-muted-foreground">/100</span>
-                                            </div>
-                                        </button>
-                                        {(user && c.userId === user.uid) && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => handleDeleteReport(c.firestoreId, c.userId)}
-                                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover/item:opacity-100"
-                                            >
-                                                <Trash2 size={16}/>
-                                                <span className='sr-only'>Delete Report</span>
-                                            </Button>
-                                        )}
-                                    </div>
-                                </li>
-                                ))}
-                            </ul>
-                            ) : (
-                            <div className='h-full flex flex-col items-center justify-center text-center p-4'>
-                                <p className="text-sm text-muted-foreground">Your past analyses will appear here.</p>
-                            </div>
-                            )}
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
                 <div className="space-y-6">
                     <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20">
                         <CardHeader className="bg-black/20 rounded-t-lg">
@@ -426,7 +369,63 @@ export default function Home() {
                         </Card>
                     </div>
                 </div>
-
+                <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col">
+                    <CardHeader className='flex-row items-center justify-between pb-4'>
+                        <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>
+                    </CardHeader>
+                    <CardContent className="w-full flex-grow overflow-hidden">
+                        <ScrollArea className="h-full pr-4 max-h-[calc(100vh-180px)]">
+                        {isLoadingReports ? <div className='h-full flex items-center justify-center'><Loader2 className="h-8 w-8 animate-spin text-primary" /></div> : reportsError ? (
+                            <div className='h-full flex flex-col items-center justify-center text-center p-4 text-destructive'>
+                                <p className="text-sm font-semibold">Error Loading History</p>
+                                <p className="text-xs break-words">{reportsError.message}</p>
+                            </div>
+                        ) : candidates.length > 0 ? (
+                            <ul className="space-y-2">
+                                {candidates.map((c) => (
+                                <li key={c.id}>
+                                    <div className="relative group/item">
+                                        <button
+                                            onClick={() => handleHistoryClick(c)}
+                                            className={cn(
+                                                "w-full text-left p-3 rounded-lg transition-colors flex items-center gap-3 border",
+                                                selectedCandidate?.id === c.id ? "bg-primary/90 text-primary-foreground border-primary" : "hover:bg-muted/50 border-border"
+                                            )}>
+                                            <div className="p-2 bg-muted rounded-md">
+                                            <Bot className={cn("w-5 h-5", selectedCandidate?.id === c.id ? "text-primary-foreground" : "text-primary")} />
+                                            </div>
+                                            <div className="flex-1 overflow-hidden">
+                                                <p className="font-semibold truncate">{c.candidate.name}</p>
+                                                <p className={cn("text-xs truncate", selectedCandidate?.id === c.id ? "text-primary-foreground/80" : "text-muted-foreground")}>{c.fileName}</p>
+                                            </div>
+                                            <div className={cn("font-semibold text-lg", getScoreStyling(c.analysis.overallScore).color)}>
+                                                <span>{c.analysis.overallScore.toFixed(0)}</span>
+                                                <span className="text-sm text-muted-foreground">/100</span>
+                                            </div>
+                                        </button>
+                                        {(user && c.userId === user.uid) && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => handleDeleteReport(c.firestoreId, c.userId)}
+                                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover/item:opacity-100"
+                                            >
+                                                <Trash2 size={16}/>
+                                                <span className='sr-only'>Delete Report</span>
+                                            </Button>
+                                        )}
+                                    </div>
+                                </li>
+                                ))}
+                            </ul>
+                            ) : (
+                            <div className='h-full flex flex-col items-center justify-center text-center p-4'>
+                                <p className="text-sm text-muted-foreground">Your past analyses will appear here.</p>
+                            </div>
+                            )}
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
             </div>
             
             <div className="space-y-6">
