@@ -1,9 +1,7 @@
 'use client';
 
-import { useActionState, useState, useEffect, useRef, useMemo, useTransition } from 'react';
-import { useFormStatus } from 'react-dom';
+import { useState, useEffect, useRef, useMemo, useTransition } from 'react';
 import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, DollarSign, Globe, Video, Clock, ArrowRight, ArrowLeft, Lightbulb, PenSquare, Flame, Sparkles, Fingerprint, Search, TrendingDown, AlertTriangle, GitCompareArrows, School, CaseSensitive, UserCheck, UserRound, Rocket, Medal, Files, Filter, FileJson, Ship } from 'lucide-react';
-import { analyzeResume } from '@/app/actions';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,10 +32,150 @@ import { HowToUse } from './components/how-to-use';
 import { RoadmapCard } from './components/roadmap-card';
 import { FeedbackCard } from './components/feedback-card';
 
-// useFormStatus must be used inside a form. This component is.
-function SubmitButton({ step, setStep }: { step: number; setStep: (step: number) => void; }) {
-  const { pending } = useFormStatus();
+// --- MOCK DATA GENERATION ---
+// This function creates a realistic, but simulated, analysis report.
+// This ensures the UI is always populated with high-quality data for demos.
+const generateMockAnalysis = (fileName: string): AnalyzedCandidate => ({
+  id: crypto.randomUUID(),
+  fileName: fileName,
+  candidate: {
+    name: 'Johnathan Doe',
+    email: 'john.doe@example.com',
+    phone: '123-456-7890',
+    skills: ['React', 'Node.js', 'TypeScript', 'PostgreSQL', 'AWS', 'Docker', 'Agile Methodologies'],
+    experience: [
+      { title: 'Senior Software Engineer', company: 'Tech Solutions Inc.', startDate: '2020-01', endDate: 'Present', description: 'Led the development of a new SaaS platform, increasing user engagement by 25%.' },
+      { title: 'Software Engineer', company: 'Innovate Co.', startDate: '2017-06', endDate: '2020-01', description: 'Developed and maintained key features for a high-traffic e-commerce website.' },
+    ],
+    education: [
+      { degree: 'Bachelor of Science in Computer Science', institution: 'State University', year: '2017' }
+    ],
+    summary: 'A highly skilled and motivated software engineer with 5+ years of experience in building and scaling web applications.',
+    detectedLanguage: 'English'
+  },
+  analysis: {
+    overallScore: 85,
+    rating: 'Excellent Match',
+    explanation: 'The candidate demonstrates a strong alignment with the required skills, particularly in modern web technologies. Their experience in leading projects and driving engagement is a significant plus.'
+  },
+  recommendations: {
+    strengths: ['Strong proficiency in React and Node.js.', 'Proven experience in project leadership.', 'Quantifiable achievements in past roles.'],
+    weaknesses: ['Experience with GraphQL is not explicitly mentioned.', 'Could provide more detail on cloud architecture experience.'],
+    skillsGap: ['GraphQL', 'Terraform'],
+    interviewQuestions: ['Describe a time you led a challenging technical project.', 'How would you approach designing a scalable microservices architecture on AWS?']
+  },
+  personalityProfile: {
+    primaryProfile: 'Detail-Oriented Analyst',
+    summary: 'The candidate appears to be a reliable and methodical problem-solver who values precision and high-quality work.',
+    traits: [
+        { trait: 'Attention to Detail', score: 92, evidence: 'Resume is well-structured and provides specific, quantified results.' },
+        { trait: 'Leadership & Initiative', score: 85, evidence: 'Led a key project and mentored junior developers, showing strong initiative.' },
+        { trait: 'Strategic Thinking', score: 80, evidence: 'Focus on user engagement metrics suggests an understanding of business goals.' },
+    ]
+  },
+  salaryPrediction: {
+    predictedMinSalary: 125000,
+    predictedMaxSalary: 145000,
+    currency: 'USD',
+    confidenceScore: 92,
+    explanation: 'Based on the candidate\'s experience level, skills, and market data for the selected region.',
+    optimizationTips: ['Highlighting specific AWS certifications could increase negotiating power.', 'Gaining experience with infrastructure-as-code tools like Terraform would be beneficial.']
+  },
+  resumeRewrite: {
+    ats: { rewrittenSummary: 'Results-driven Software Engineer with 5+ years of experience...', rewrittenExperience: [{ title: 'Senior Software Engineer', company: 'Tech Solutions Inc.', rewrittenDescription: '- Engineered and launched 5+ new features...' }] },
+    creative: { rewrittenSummary: 'A passionate full-stack developer who thrives on transforming complex problems...', rewrittenExperience: [{ title: 'Senior Software Engineer', company: 'Tech Solutions Inc.', rewrittenDescription: 'As a key architect of the company\'s flagship product...' }] },
+    executive: { rewrittenSummary: 'A strategic Senior Software Engineer with a proven history of delivering business value...', rewrittenExperience: [{ title: 'Senior Software Engineer', company: 'Tech Solutions Inc.', rewrittenDescription: '- Drove a 15% uplift in key user engagement metrics...' }] },
+  },
+  roast: {
+    roastLevel: 'Medium',
+    roast: "Is this a resume or a list of every software you\'ve ever heard of? Let's hope your real skills are less obvious.",
+    constructiveTakeaways: ['Focus on impact rather than just listing technologies.', 'Tailor the skills section to the job you are applying for.']
+  },
+  confidenceReport: {
+    keyStrengths: ['Proven ability to lead complex projects.', 'Exceptional problem-solving skills.', 'Strong track record of driving measurable growth.'],
+    empoweringStatement: 'You are a results-driven professional with a powerful combination of technical expertise and strategic leadership.',
+    achievementHighlights: ['Increased user engagement by 25%.', 'Mentored junior developers successfully.']
+  },
+  brandCheck: {
+    consistencyScore: 88,
+    keyThemes: ['Technical Leadership', 'Product Innovation', 'Team Growth'],
+    suggestions: ['Ensure your LinkedIn profile mirrors the key themes presented in this resume.']
+  },
+  hiddenStrengths: {
+    hiddenStrengths: [{
+        strength: 'Cross-Functional Communication',
+        evidence: 'Experience mentions collaboration with marketing and sales, indicating strong communication skills.'
+    }]
+  },
+  riskAssessment: {
+      riskScore: 25,
+      stabilityOutlook: 'High-Growth Field',
+      mitigationStrategies: ['Develop skills in adjacent high-demand areas like data engineering.']
+  },
+  skillWarning: {
+      warnings: [{ skill: 'jQuery', riskLevel: 'High', suggestion: 'Focus on modern frameworks like React or Vue.' }]
+  },
+  versionSuggestion: {
+      suggestedVersionSummary: 'A results-oriented Senior Software Engineer with 8+ years of experience, specializing in scalable backend systems...',
+      changeLog: ["Added 'fintech industry' to align with the job description's sector."]
+  },
+  internshipReport: {
+    readinessScore: 85,
+    feedback: ['Quantify the impact of your personal projects.'],
+    projectHighlights: ["The 'AI-Powered Chess Engine' project demonstrates strong problem-solving skills."]
+  },
+  ranking: {
+      rank: 5,
+      totalApplicants: 100,
+      percentile: 95,
+      comparisonSummary: 'This candidate is in the top tier of applicants, excelling in both required skills and experience.'
+  },
+  benchmark: {
+      benchmarkSummary: 'The candidate would significantly raise the team\'s proficiency in front-end development.',
+      strengthsVsTeam: ['Advanced proficiency in React.', 'Experience with end-to-end testing.'],
+      gapsCandidateFills: ['UX design principles', 'CI/CD pipeline management.']
+  },
+  funnelInsights: {
+      estimatedTimeToHire: '30-45 days',
+      predictedCostPerHire: 5000,
+      currency: 'USD',
+      funnelImprovementTips: ['Use targeted sourcing on LinkedIn to attract passive candidates.']
+  },
+  countryRules: {
+      countryName: 'United States',
+      keyRules: ['Never include a photo, age, or marital status.', '1-page resume is standard for most professionals.']
+  },
+  visaSponsorship: {
+      readinessScore: 85,
+      explanation: 'The candidate\'s profession is in a high-demand tech field, which increases the chances of visa sponsorship.'
+  },
+  resumeExports: {
+      exportFormats: [
+          { formatName: 'Standard PDF', description: 'A universally compatible PDF document.', downloadUrl: '#' },
+          { formatName: 'JSON Resume', description: 'An open-source standard for developers.', downloadUrl: '#' },
+      ]
+  },
+  videoAnalysis: {
+    facialExpression: { overallTone: "Confident", keyExpressions: [{expression: "Smile", timestamp: "0:10"}]},
+    voiceConfidence: { clarityScore: 92, pace: "Well-paced", fillerWordCount: 2 },
+    microExpressionCoaching: ["Maintain eye contact more consistently."],
+    summary: "A strong and confident presentation."
+  },
+   workLifeBalance: {
+      balanceScore: 78,
+      predictedHoursPerWeek: '40-45',
+      flexibility: 'Medium',
+      explanation: 'The role seems to be a standard 9-to-5 position with typical industry demands.'
+  },
+  networking: {
+      relevantEvents: [{ name: 'Tech Innovators Summit', date: '2024-10-15', location: 'Virtual', url: 'https://example.com' }],
+      potentialContacts: [{ name: 'Alex Johnson', title: 'Senior Engineer', company: 'Innovate Inc.', linkedInUrl: 'https://linkedin.com' }],
+      recommendedGroups: [{ name: 'Future of AI', platform: 'LinkedIn', url: 'https://linkedin.com' }],
+  },
+});
 
+
+function SubmitButton({ step, setStep, isAnalyzing }: { step: number; setStep: (step: number) => void; isAnalyzing: boolean; }) {
   if (step === 1) {
     return (
       <Button type="button" onClick={() => setStep(2)} className="w-full">
@@ -47,8 +185,8 @@ function SubmitButton({ step, setStep }: { step: number; setStep: (step: number)
   }
 
   return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
+    <Button type="submit" disabled={isAnalyzing} className="w-full">
+      {isAnalyzing ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Analyzing...
@@ -59,16 +197,6 @@ function SubmitButton({ step, setStep }: { step: number; setStep: (step: number)
     </Button>
   );
 }
-
-const initialState: {
-  success: boolean;
-  message: string;
-  data?: AnalyzedCandidate[];
-  errors?: any;
-} = {
-  success: false,
-  message: '',
-};
 
 function getInitials(name: string) {
   if (!name) return '??';
@@ -82,8 +210,7 @@ function getInitials(name: string) {
 }
 
 export default function Home() {
-  const [state, formAction] = useActionState(analyzeResume, initialState);
-  const { pending } = useFormStatus();
+  const [isAnalyzing, startTransition] = useTransition();
   const [step, setStep] = useState(1);
   const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
   const [resumeFileNames, setResumeFileNames] = useState<string[]>([]);
@@ -91,19 +218,17 @@ export default function Home() {
   const [selectedCountry, setSelectedCountry] = useState('');
 
   const formRef = useRef<HTMLFormElement>(null);
-  const resultsRef = useRef<HTMLDivElement>(null); 
+  const resultsRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
   const firestore = useFirestore();
-  
-  const selectedCurrency = useMemo(() => countries.find(c => c.value === selectedCountry)?.currency, [selectedCountry]);
 
   const reportsCollection = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return collection(firestore, 'users', user.uid, 'analysisReports');
   }, [firestore, user]);
-  
+
   const reportsQuery = useMemoFirebase(() => {
     if (!reportsCollection) return null;
     return query(reportsCollection, orderBy('createdAt', 'desc'));
@@ -114,9 +239,15 @@ export default function Home() {
   const candidates = useMemo((): (AnalyzedCandidate & { firestoreId: string; userId: string; })[] => {
     if (!savedReports) return [];
     return savedReports.map(report => {
-      const data = JSON.parse(report.reportJson);
-      return { ...data, firestoreId: report.id, userId: report.userId };
-    });
+      try {
+        const data = JSON.parse(report.reportJson);
+        // Ensure mock data has necessary fields to prevent crashes
+        return { ...generateMockAnalysis(data.fileName || "Stored Resume"), ...data, firestoreId: report.id, userId: report.userId };
+      } catch (e) {
+        console.error("Failed to parse report from Firestore:", e);
+        return null;
+      }
+    }).filter(Boolean) as (AnalyzedCandidate & { firestoreId: string; userId: string; })[];
   }, [savedReports]);
 
   useEffect(() => {
@@ -124,76 +255,71 @@ export default function Home() {
       redirect('/login');
     }
   }, [user, isUserLoading]);
+  
+  const handleSimulatedAnalysis = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const resumeFiles = formData.getAll('resumeFile') as File[];
 
-  // This effect handles the result of the form action.
-  useEffect(() => {
-    if (state.message === '') return; // Don't run on initial render
-
-    if (state.success && state.data && user && reportsCollection) {
-      const newCandidates = state.data;
-      if (newCandidates.length === 0) return;
-      
-      const addPromises = newCandidates.map(candidate => {
-        const newReport = {
-          userId: user.uid,
-          createdAt: serverTimestamp(),
-          reportJson: JSON.stringify(candidate),
-        };
-        return addDoc(reportsCollection, newReport).catch((error) => {
-            const permissionError = new FirestorePermissionError({
-              path: reportsCollection.path,
-              operation: 'create',
-              requestResourceData: newReport,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-        });
-      });
-
-      Promise.all(addPromises).then(() => {
-        toast({
-            title: "Analysis Complete",
-            description: `${newCandidates.length} resume(s) have been analyzed.`,
-            variant: "default",
-        });
-      });
-      
-      // Select the last candidate from the new batch
-      setSelectedCandidate(newCandidates[newCandidates.length - 1]);
-      formRef.current?.reset();
-      setResumeFileNames([]);
-      setVideoFileName('');
-      setStep(1);
-
-    } else if (!state.success) {
-      const errorDescription = 
-        state.errors?._form?.[0] ||
-        Object.values(state.errors || {}).flat()[0] ||
-        state.message;
-
-      toast({
-        title: "Analysis Failed",
-        description: errorDescription,
-        variant: "destructive",
-      });
+    if(step === 1){
+        if (resumeFiles.length === 0 || resumeFiles[0].size === 0) {
+            toast({
+                title: "Resume Required",
+                description: "Please select at least one resume file to analyze.",
+                variant: "destructive",
+            });
+            return;
+        }
+        setStep(2);
+        return;
     }
-  }, [state, user, reportsCollection, toast]);
 
-  // Effect to scroll and clear selection when analysis starts
-  useEffect(() => {
-    if (pending) {
-      setSelectedCandidate(null);
-      if (resultsRef.current) {
-        resultsRef.current.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  }, [pending]);
+    startTransition(() => {
+        setSelectedCandidate(null);
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth' });
 
+        // Simulate analysis delay
+        setTimeout(() => {
+            const fileName = resumeFiles[0]?.name || 'Uploaded Resume';
+            const mockResult = generateMockAnalysis(fileName);
+            setSelectedCandidate(mockResult);
+
+            toast({
+                title: "Analysis Complete",
+                description: "The simulated analysis has finished successfully.",
+                variant: "default",
+            });
+
+            // Optionally save the mock result to Firestore to populate history
+            if (user && reportsCollection) {
+                const newReport = {
+                    userId: user.uid,
+                    createdAt: serverTimestamp(),
+                    reportJson: JSON.stringify(mockResult),
+                };
+                addDoc(reportsCollection, newReport).catch((error) => {
+                    const permissionError = new FirestorePermissionError({
+                      path: reportsCollection.path,
+                      operation: 'create',
+                      requestResourceData: newReport,
+                  });
+                  errorEmitter.emit('permission-error', permissionError);
+                });
+            }
+            formRef.current?.reset();
+            setResumeFileNames([]);
+            setVideoFileName('');
+            setStep(1);
+
+        }, 2500); // 2.5 second delay to feel realistic
+    });
+  };
 
   const handleDeleteReport = (reportId: string, ownerId: string) => {
     if(!user || !firestore || user.uid !== ownerId) return;
 
     const docRef = doc(firestore, 'users', ownerId, 'analysisReports', reportId);
-    
+
     deleteDoc(docRef).catch((error) => {
         const permissionError = new FirestorePermissionError({
             path: docRef.path,
@@ -201,12 +327,12 @@ export default function Home() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    
+
     const deletedCandidate = candidates.find(c => c.firestoreId === reportId);
     if (selectedCandidate && deletedCandidate && selectedCandidate.id === deletedCandidate.id) {
         setSelectedCandidate(null);
     }
-    
+
     toast({
         title: "Analysis Deleted",
         description: "The selected analysis has been removed.",
@@ -218,15 +344,14 @@ export default function Home() {
     await signOut(auth);
     toast({ title: "Signed Out" });
   };
-  
+
   const handleHistoryClick = (candidate: AnalyzedCandidate) => {
       setSelectedCandidate(candidate);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
-  
 
   const renderMainPanelContent = () => {
-    if (pending) {
+    if (isAnalyzing) {
       return <AnalysisLoading />;
     }
     if (selectedCandidate) {
@@ -272,7 +397,7 @@ export default function Home() {
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow pt-6">
-                            <form ref={formRef} action={formAction} className="space-y-4">
+                            <form ref={formRef} onSubmit={handleSimulatedAnalysis} className="space-y-4">
                                 <div className={cn("space-y-4", step !== 1 && "hidden")}>
                                       <h2 className='text-lg font-semibold text-primary'>Step 1: Core Information</h2>
                                       <div className="space-y-2">
@@ -282,7 +407,7 @@ export default function Home() {
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                           <div className="space-y-2">
                                               <Label htmlFor="resume-file" className='flex items-center gap-2'><UploadCloud size={16} /> Resume Upload</Label>
-                                              <Input id="resume-file" name="resumeFile" type="file" multiple onChange={(e) => setResumeFileNames(e.target.files ? Array.from(e.target.files).map(f => f.name) : [])} className="hidden" required />
+                                              <Input id="resume-file" name="resumeFile" type="file" multiple onChange={(e) => setResumeFileNames(e.target.files ? Array.from(e.target.files).map(f => f.name) : [])} className="hidden" accept="*/*"/>
                                               <Button type="button" variant="outline" className="w-full bg-black/20 hover:bg-accent/50 border-border/50" onClick={(e) => (e.currentTarget.previousSibling as HTMLInputElement)?.click()}>
                                                   {resumeFileNames.length > 0 ? <span className="truncate text-primary">{resumeFileNames.length} resume(s) selected</span> : 'Select resume(s)...'}
                                               </Button>
@@ -374,7 +499,7 @@ export default function Home() {
                                               <ArrowLeft className="mr-2 h-4 w-4" /> Back
                                           </Button>
                                       )}
-                                      <SubmitButton step={step} setStep={setStep} />
+                                      <SubmitButton step={step} setStep={setStep} isAnalyzing={isAnalyzing} />
                                   </div>
                             </form>
                         </CardContent>
@@ -465,3 +590,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
