@@ -74,7 +74,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
       
       <div className="space-y-6">
         {/* Overview */}
-        <Card className='bg-black/20 border border-primary/20'>
+        <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary text-xl"><Award size={22} /> Overall Score & Recommendation</CardTitle>
             </CardHeader>
@@ -94,7 +94,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         </Card>
 
         {/* AI Insights */}
-        <Card className='bg-black/20 border border-primary/20'>
+        <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary text-xl"><BrainCircuit size={22} /> AI Insights</CardTitle>
             </CardHeader>
@@ -121,7 +121,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         </Card>
 
         {roast && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Flame size={20} /> Resume Roast
@@ -141,7 +141,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {confidenceReport && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Sparkles size={20} /> Confidence Booster
@@ -168,7 +168,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {brandCheck && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Fingerprint size={20} /> Personal Brand Consistency
@@ -198,7 +198,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {hiddenStrengths && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Search size={20} /> Hidden Strength Discovery
@@ -216,7 +216,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {riskAssessment && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <TrendingDown size={20} /> Career Risk Assessment
@@ -241,7 +241,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {skillWarning && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <AlertTriangle size={20} /> Skill Obsolescence Warning
@@ -262,7 +262,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {versionSuggestion && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <GitCompareArrows size={20} /> Resume Versioning AI
@@ -284,7 +284,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {internshipReport && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <School size={20} /> Internship Readiness
@@ -314,7 +314,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {ranking && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl"><Medal size={20} /> Candidate Ranking</CardTitle>
                 </CardHeader>
@@ -342,7 +342,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {benchmark && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl"><Users size={20} /> Team Benchmarking</CardTitle>
                 </CardHeader>
@@ -365,7 +365,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
 
         {funnelInsights && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl"><Filter size={20} /> Hiring Funnel Insights</CardTitle>
                 </CardHeader>
@@ -391,7 +391,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {videoAnalysis && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                  <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Video size={20} /> AI Video Resume Feedback
@@ -434,7 +434,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {salaryPrediction && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <DollarSign size={20} /> Salary Prediction & Optimization
@@ -471,7 +471,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {personalityProfile && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <UserCog size={20} /> Career Personality Profile
@@ -503,7 +503,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {workLifeBalance && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Clock size={20} /> Work-Life Balance Predictor
@@ -536,7 +536,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {networking && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Users size={20} /> Networking Opportunity Finder
@@ -590,7 +590,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {resumeRewrite && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <PenSquare size={20} /> AI Resume Rewriter
@@ -670,7 +670,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {countryRules && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Globe size={20} /> Resume Rules for {countryRules.countryName}
@@ -685,7 +685,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {visaSponsorship && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <Ship size={20} /> Visa Sponsorship Readiness
@@ -707,7 +707,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {resumeExports && (
-            <Card className='bg-black/20 border border-primary/20'>
+            <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-primary text-xl">
                         <FileJson size={20} /> Export Resume
@@ -728,7 +728,7 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         )}
         
         {/* Resume Details */}
-        <Card className='bg-black/20 border border-primary/20'>
+        <Card className='bg-black/20 border border-primary/20 backdrop-blur-lg shadow-lg shadow-primary/10'>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-primary text-xl"><User size={20} /> Extracted Resume Details</CardTitle>
             </CardHeader>
