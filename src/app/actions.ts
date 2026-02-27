@@ -28,6 +28,7 @@ import {
 import type {
   AnalyzedCandidate,
   RewriteResumeOutput,
+  VideoAnalysisOutput,
 } from '@/lib/types';
 import { z } from 'zod';
 
@@ -148,12 +149,18 @@ async function _analyzeSingleResume(
     const resumeExperienceSummary = extractedInfo.summary || extractedInfo.experience.map(exp => `${exp.title} at ${exp.company}: ${exp.description}`).join('\n');
     const resumeFullTextForProfiling = `${extractedInfo.summary || ''}\n\nSkills: ${extractedInfo.skills.join(', ')}\n\nExperience:\n${resumeExperienceSummary}`;
 
-    // 3. Perform analysis with score first.
-    const analysis = await generateResumeMatchScore({ resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, jobDescription });
-    if (!analysis) throw new Error('Core analysis failed to generate a score.');
-
-    // 4. Perform all other analyses in parallel.
-    const allOtherPromises = [
+    // 3. Set up all analysis promises to run in parallel
+    let videoAnalysisPromise: Promise<VideoAnalysisOutput | null>;
+    if (analyzeVideo && videoFile) {
+        videoAnalysisPromise = fileToDataUri(videoFile)
+            .then(uri => analyzeVideoResume({ videoDataUri: uri }));
+    } else {
+        videoAnalysisPromise = Promise.resolve(null);
+    }
+    
+    const allPromises = [
+        // Core Analyses
+        generateResumeMatchScore({ resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, jobDescription }),
         generateHiringRecommendations({
             parsedResume: {
                 name: extractedInfo.name,
@@ -164,18 +171,23 @@ async function _analyzeSingleResume(
                 summary: extractedInfo.summary,
             },
             jobDescription,
-            overallScore: analysis.overallScore, // Use the real score
         }),
         generateCareerPersonalityProfile({ resumeSummary: resumeFullTextForProfiling }),
+
+        // Standard Modules
         predictSalary ? predictSalaryRange({ jobDescription, resumeSkills: extractedInfo.skills, resumeExperience: resumeExperienceSummary, country }) : Promise.resolve(null),
-        (analyzeVideo && videoFile) ? analyzeVideoResume({ videoDataUri: await fileToDataUri(videoFile) }) : Promise.resolve(null),
+        videoAnalysisPromise,
         predictWorkLife ? predictWorkLifeBalance({ jobDescription, resumeExperience: resumeExperienceSummary }) : Promise.resolve(null),
         findNetworking ? findNetworkingOpportunities({ jobTitle: extractedInfo.experience[0]?.title || 'Professional', skills: extractedInfo.skills, location: country }) : Promise.resolve(null),
+        
+        // Resume Rewriter
         ...(shouldRewriteResume ? [
             rewriteResume({ style: 'ats', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
             rewriteResume({ style: 'creative', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
             rewriteResume({ style: 'executive', summary: extractedInfo.summary, experience: extractedInfo.experience, skills: extractedInfo.skills }),
         ] : [Promise.resolve(null), Promise.resolve(null), Promise.resolve(null)]),
+
+        // New Analysis Modules
         shouldRoast ? roastResume({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
         shouldBoost ? confidenceBooster({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
         shouldCheckBrand ? personalBrandCheck({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
@@ -184,26 +196,32 @@ async function _analyzeSingleResume(
         shouldWarnSkills ? skillObsolescenceWarning({ skills: extractedInfo.skills }) : Promise.resolve(null),
         shouldVersion ? resumeVersionControl({ resumeSummary: extractedInfo.summary || '', jobDescription }) : Promise.resolve(null),
         (shouldAssessInternship || analysisMode === 'fresher') ? internshipReadiness({ resumeSummary: resumeFullTextForProfiling }) : Promise.resolve(null),
-        candidateRanking ? rankCandidate({ overallScore: analysis.overallScore }) : Promise.resolve(null),
+        
+        // Enterprise Modules
+        candidateRanking ? rankCandidate({ jobDescription }) : Promise.resolve(null),
         teamBenchmarking ? benchmarkCandidate({ skills: extractedInfo.skills }) : Promise.resolve(null),
         hiringFunnelInsights ? getHiringFunnelInsights({ jobDescription }) : Promise.resolve(null),
-        // International
+
+        // International & Export
         getResumeExports ? getResumeExports({ resumeData: JSON.stringify(extractedInfo) }) : Promise.resolve(null),
         getCountryRules ? getCountryResumeRules({ country }) : Promise.resolve(null),
         assessVisa ? assessVisaSponsorship({ country, jobTitle: extractedInfo.experience[0]?.title || 'Engineer', skills: extractedInfo.skills }) : Promise.resolve(null),
     ];
 
+    // 4. Await all promises
     const [
-        recommendations, personalityProfile,
+        analysis, recommendations, personalityProfile,
         salaryPrediction, videoAnalysis, workLifeBalance, networking,
         atsRewrite, creativeRewrite, executiveRewrite,
         roast, confidenceReport, brandCheck, hiddenStrengths, riskAssessment, skillWarning, versionSuggestion, internshipReport,
         ranking, benchmark, funnelInsights,
         resumeExports, countryRules, visaSponsorship,
-    ] = await Promise.all(allOtherPromises);
+    ] = await Promise.all(allPromises);
     
+    if (!analysis) throw new Error('Core analysis failed to generate a score.');
     if (!recommendations) throw new Error('Hiring recommendations failed to generate.');
 
+    // 5. Assemble final result
     const result: AnalyzedCandidate = {
       id: crypto.randomUUID(),
       fileName: resumeFile.name,
@@ -227,7 +245,6 @@ async function _analyzeSingleResume(
       ranking: ranking || undefined,
       benchmark: benchmark || undefined,
       funnelInsights: funnelInsights || undefined,
-      // International
       resumeExports: resumeExports || undefined,
       countryRules: countryRules || undefined,
       visaSponsorship: visaSponsorship || undefined,

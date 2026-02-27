@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const RankCandidateInputSchema = z.object({
-  overallScore: z.number().describe("The candidate's overall match score."),
+  jobDescription: z.string().describe("The job description for context."),
 });
 export type RankCandidateInput = z.infer<typeof RankCandidateInputSchema>;
 
@@ -39,8 +39,9 @@ const rankCandidateFlow = ai.defineFlow(
   async (input) => {
     await new Promise(resolve => setTimeout(resolve, 300)); // Simulate processing time
     
+    const mockScore = 60 + Math.random() * 40; // a score between 60 and 100
     const totalApplicants = 50;
-    const percentile = Math.min(99, Math.round((input.overallScore / 100) * 80 + 15)); // Skew scores to be more realistic
+    const percentile = Math.min(99, Math.round((mockScore / 100) * 80 + 15)); // Skew scores to be more realistic
     const rank = Math.max(1, Math.floor(totalApplicants * (1 - (percentile / 100))));
 
     return {

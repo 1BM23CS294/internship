@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   ShieldAlert,
   Award,
-  BookCheck,
   BrainCircuit,
   ListMinus,
   Languages,
@@ -36,7 +35,6 @@ import {
   Filter,
   FileJson,
   Globe,
-  FileText,
   Ship,
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -47,35 +45,6 @@ import { getScoreStyling } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-function PerformanceMetric({ label, score, icon: Icon, explanation }: { label: string, score: number, icon: React.ElementType, explanation: string }) {
-    const styling = getScoreStyling(score * 10); // score is 0-10, styling expects 0-100
-    return (
-        <div className="space-y-2">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Icon className="w-4 h-4 text-primary" />
-                    <p className="text-sm font-medium">{label}</p>
-                </div>
-                <p className="text-sm font-semibold">{score}/10</p>
-            </div>
-            <Progress value={score * 10} indicatorClassName={styling.indicator} />
-            <p className='text-xs text-muted-foreground'>{explanation}</p>
-        </div>
-    )
-}
-
-function StarRating({ rating, max = 5 }: { rating: number; max?: number }) {
-  return (
-    <div className="flex items-center">
-      {Array.from({ length: max }, (_, i) => (
-        <svg key={i} className={cn("w-5 h-5", i < Math.round(rating) ? "text-yellow-400" : "text-gray-300")} fill="currentColor" viewBox="0 0 20 20">
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.957a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.368 2.448a1 1 0 00-.364 1.118l1.287 3.957c.3.921-.755 1.688-1.54 1.118l-3.368-2.448a1 1 0 00-1.175 0l-3.368 2.448c-.784.57-1.838-.197-1.539-1.118l1.287-3.957a1 1 0 00-.364-1.118L2.24 9.384c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69L9.049 2.927z" />
-        </svg>
-      ))}
-    </div>
-  );
-}
-
 export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
   const { 
     candidate, analysis, recommendations, salaryPrediction, personalityProfile, 
@@ -84,10 +53,9 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
     ranking, benchmark, funnelInsights,
     resumeExports, countryRules, visaSponsorship
   } = data;
-  const performanceMetrics = analysis.performanceMetrics;
   
   const activeTabs = [
-    'overview', 'performance', 'recommendations',
+    'overview', 'recommendations',
     roast ? 'roast' : null,
     confidenceReport ? 'confidence' : null,
     brandCheck ? 'brand' : null,
@@ -131,7 +99,6 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
         <Tabs defaultValue="overview" className="w-full" activationMode='manual'>
             <TabsList className="grid w-full bg-black/20" style={{ gridTemplateColumns: `repeat(${activeTabs.length}, minmax(0, 1fr))`}}>
                 {activeTabs.includes('overview') && <TabsTrigger value="overview">Overview</TabsTrigger>}
-                {activeTabs.includes('performance') && <TabsTrigger value="performance">Performance</TabsTrigger>}
                 {activeTabs.includes('recommendations') && <TabsTrigger value="recommendations">AI Insights</TabsTrigger>}
                 {activeTabs.includes('roast') && <TabsTrigger value="roast">Roast</TabsTrigger>}
                 {activeTabs.includes('confidence') && <TabsTrigger value="confidence">Confidence</TabsTrigger>}
@@ -173,21 +140,6 @@ export function CandidateReport({ data }: { data: AnalyzedCandidate }) {
                             <p className='text-sm text-foreground/70'>{recommendations.overallRecommendation}</p>
                         </div>
                     </div>
-                </CardContent>
-            </Card>
-            </TabsContent>
-
-            <TabsContent value="performance" className="mt-6">
-            <Card className='bg-black/20 border border-primary/20'>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-primary"><BookCheck size={20} /> Performance Metrics</CardTitle>
-                </CardHeader>
-                <CardContent className='space-y-6'>
-                <PerformanceMetric label="Formatting" score={performanceMetrics.formatting.score} explanation={performanceMetrics.formatting.explanation} icon={Award} />
-                <PerformanceMetric label="Content Quality" score={performanceMetrics.contentQuality.score} explanation={performanceMetrics.contentQuality.explanation} icon={Award} />
-                <PerformanceMetric label="ATS Compatibility" score={performanceMetrics.atsCompatibility.score} explanation={performanceMetrics.atsCompatibility.explanation} icon={Award} />
-                <PerformanceMetric label="Keyword Usage" score={performanceMetrics.keywordUsage.score} explanation={performanceMetrics.keywordUsage.explanation} icon={Award} />
-                <PerformanceMetric label="Quantified Results" score={performanceMetrics.quantifiedResults.score} explanation={performanceMetrics.quantifiedResults.explanation} icon={Award} />
                 </CardContent>
             </Card>
             </TabsContent>
