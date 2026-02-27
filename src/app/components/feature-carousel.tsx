@@ -62,7 +62,7 @@ const features = [
 
 export function FeatureCarousel() {
   const plugin = React.useRef(
-    Autoplay({ delay: 3000, stopOnInteraction: true })
+    Autoplay({ delay: 2000, stopOnInteraction: true })
   )
 
   return (
