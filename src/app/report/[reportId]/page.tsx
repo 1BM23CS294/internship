@@ -13,41 +13,54 @@ export default function ReportPage({ params }: { params: { reportId: string } })
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
+    const [reportData, setReportData] = useState<AnalyzedCandidate | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
     const reportDocRef = useMemoFirebase(() => {
         if (!user || !firestore || !reportId) return null;
-        // IMPORTANT: This assumes the user can only see their own reports.
-        // Security rules must enforce this.
         return doc(firestore, 'users', user.uid, 'analysisReports', reportId);
     }, [firestore, user, reportId]);
 
-    const { data: reportDoc, isLoading: isReportLoading, error: reportError } = useDoc(reportDocRef);
-
-    const [reportData, setReportData] = useState<AnalyzedCandidate | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const { data: reportDocFromHook, isLoading: isReportLoading, error: reportError } = useDoc(reportDocRef);
 
     useEffect(() => {
-        if (reportDoc) {
-            if (reportDoc.reportJson) {
+        // Prioritize data from sessionStorage
+        const sessionDataString = sessionStorage.getItem(`report-data-${reportId}`);
+        if (sessionDataString) {
+            try {
+                const sessionData = JSON.parse(sessionDataString);
+                setReportData(sessionData);
+                setIsLoading(false);
+                sessionStorage.removeItem(`report-data-${reportId}`); // Clean up
+                return; // Data found, no need to proceed to Firestore logic
+            } catch (e) {
+                console.error("Could not parse report data from session storage.", e);
+                // If parsing fails, fall through to Firestore
+            }
+        }
+
+        // If no session data, use data from Firestore hook
+        if (!isReportLoading && !isUserLoading) {
+            if (reportDocFromHook) {
                 try {
-                    setReportData(JSON.parse(reportDoc.reportJson));
+                    const firestoreData = JSON.parse(reportDocFromHook.reportJson);
+                    setReportData(firestoreData);
                 } catch (e) {
-                    console.error("Failed to parse report data from Firestore", e);
+                    console.error("Could not parse report data from Firestore.", e);
                     setError("Failed to read report data.");
                 }
+            } else if (reportError) {
+                setError(reportError.message);
+            } else {
+                setError("Report document does not exist.");
             }
-        } else if (!isReportLoading && !reportDoc) {
-             setError("Report document does not exist.");
+            setIsLoading(false);
         }
-    }, [reportDoc, isReportLoading]);
-
-    useEffect(() => {
-        if (reportError) {
-            setError(reportError.message);
-        }
-    }, [reportError]);
+    }, [reportId, reportDocFromHook, isReportLoading, reportError, isUserLoading]);
 
 
-    if (isUserLoading || isReportLoading) {
+    if (isLoading) {
         return <PageLoader />;
     }
 

@@ -21,7 +21,7 @@ import { useAuth, useUser, useFirestore, useCollection, useMemoFirebase, Firesto
 import { redirect, useRouter } from 'next/navigation';
 import { PageLoader } from '@/components/ui/page-loader';
 import { signOut } from 'firebase/auth';
-import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc } from 'firebase/firestore';
+import { collection, query, orderBy, addDoc, serverTimestamp, doc, deleteDoc, setDoc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { getScoreStyling } from '@/lib/theme';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -183,7 +183,7 @@ export default function Home() {
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   };
 
-  const handleDownloadPdf = async () => {
+ const handleDownloadPdf = async () => {
     if (!selectedCandidate) {
       toast({
         title: "No report selected",
@@ -194,63 +194,56 @@ export default function Home() {
     }
 
     setIsDownloading(true);
-    let reportId = selectedCandidate.firestoreId;
+    // The report ID is ALWAYS the UUID from the analysis data.
+    const reportId = selectedCandidate.id;
 
-    // If the report is new and doesn't have an ID, save it to get one.
-    if (!reportId && reportsCollection && user && !isAnonymous) {
-      // Create a clean copy of the report object without the undefined firestoreId
-      const reportToSave: Omit<typeof selectedCandidate, 'firestoreId'> = { ...selectedCandidate };
-      
-      const reportData = {
+    try {
+      // Pass data to the new tab via sessionStorage to prevent race conditions.
+      sessionStorage.setItem(`report-data-${reportId}`, JSON.stringify(selectedCandidate));
+
+      // If the report is new and not saved yet, save it to Firestore using the UUID as the document ID.
+      // This is non-blocking for the user.
+      if (!selectedCandidate.firestoreId && reportsCollection && user && !isAnonymous) {
+        const docRef = doc(reportsCollection, reportId); // Use UUID as doc ID
+        
+        const reportToSave: Omit<typeof selectedCandidate, 'firestoreId'> = { ...selectedCandidate };
+        const reportData = {
           reportJson: JSON.stringify(reportToSave),
           createdAt: serverTimestamp(),
           userId: user.uid,
-      };
-      try {
-          const docRef = await addDoc(reportsCollection, reportData);
-          reportId = docRef.id;
-          // Update the state so the ID is available for next time
-          setSelectedCandidate(prev => prev ? { ...prev, firestoreId: reportId } : null);
-          toast({
-            title: "Report Saved",
-            description: "The analysis has been saved to your history.",
+        };
+
+        setDoc(docRef, reportData)
+          .then(() => {
+            // Silently update the state on the main page to mark as saved.
+            setSelectedCandidate(prev => prev && prev.id === reportId ? { ...prev, firestoreId: reportId } : prev);
+            console.log("Report saved to history with ID:", reportId);
+          })
+          .catch((error) => {
+            console.error("Failed to save report to history:", error);
+            const permissionError = new FirestorePermissionError({
+                path: docRef.path,
+                operation: 'create',
+                requestResourceData: reportData,
+            });
+            errorEmitter.emit('permission-error', permissionError);
           });
-      } catch (error) {
-          const permissionError = new FirestorePermissionError({
-              path: reportsCollection.path,
-              operation: 'create',
-              requestResourceData: reportData,
-          });
-          errorEmitter.emit('permission-error', permissionError);
-          toast({
-              title: "Failed to Save Report",
-              description: "Could not save the report to generate a download link. Please try again.",
-              variant: "destructive",
-          });
-          setIsDownloading(false);
-          return;
       }
-    } else if (isAnonymous) {
-        toast({
-            title: 'Guest Mode',
-            description: 'Signing up for a free account will allow you to save and download reports.',
-            variant: 'destructive',
-        });
-        setIsDownloading(false);
-        return;
+
+      window.open(`/report/${reportId}`, '_blank');
+
+    } catch (e) {
+      console.error("Failed to prepare report for download:", e);
+      toast({
+        title: "Download Failed",
+        description: "An unexpected error occurred while preparing the report.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
     }
-    
-    if (reportId) {
-        window.open(`/report/${reportId}`, '_blank');
-    } else {
-         toast({
-            title: "Report ID Missing",
-            description: "Could not generate a download link for this report.",
-            variant: "destructive",
-        });
-    }
-    setIsDownloading(false);
   };
+
 
   const renderMainPanelContent = () => {
     if (isPending) {
