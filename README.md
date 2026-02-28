@@ -1,60 +1,56 @@
-# Intelligent Resume Analyzer
+# Welcome to the Intelligent Resume Analyzer!
 
-This is a web application built with Next.js, Firebase, and Google's Gemini AI to provide intelligent analysis of resumes. It allows recruiters and job seekers to upload resumes, compare them against job descriptions, and get a comprehensive set of AI-powered insights.
-
----
-
-## Features
-
-- **Multi-Resume Analysis:** Upload and analyze multiple resumes at once against a single job description.
-- **AI-Powered Scoring:** Get an overall match score and a detailed explanation of how a resume fits a role.
-- **Advanced Analysis Modules:**
-    - **Resume Roast:** Fun but insightful feedback on a resume.
-    - **Confidence Booster:** Highlights key strengths and empowering statements.
-    - **Personal Brand Check:** Analyzes brand consistency.
-    - **And many more...** (See the "How It Works" section on the dashboard).
-- **Enterprise & International Features:**
-    - Candidate Ranking & Team Benchmarking.
-    - Country-Specific Resume Rules & Visa Sponsorship Readiness.
-- **Firebase Integration:** User authentication and data storage for analysis history are managed with Firebase.
+This is your personal AI assistant for understanding resumes. Whether you're a recruiter trying to find the perfect candidate or a job seeker wanting to improve your resume, this tool is for you.
 
 ---
 
-## Getting Started
+## Key Features
 
-### 1. Prerequisites
+*   **Analyze Resumes:** Upload a resume and a job description to see how well they match.
+*   **Compare Candidates:** Upload two resumes to see a side-by-side comparison.
+*   **Deep AI Insights:** Get more than just a score. See strengths, weaknesses, and even a "resume roast" for fun, constructive feedback.
+*   **Career Tools:** Predict salary ranges, check for in-demand skills, and get tips to improve.
+*   **User Accounts:** Sign up to save and view your past analysis reports.
 
-- [Node.js](https://nodejs.org/) (v18 or later)
-- [npm](https://www.npmjs.com/)
+---
 
-### 2. Setup
+## How to Get Started (for Developers)
 
-1.  **Install dependencies:**
+If you want to run this project on your own computer, follow these simple steps.
+
+### What You Need
+
+*   You'll need **Node.js** installed on your computer.
+
+### Step-by-Step Guide
+
+1.  **Install the Project Files:**
+    Open your computer's terminal or command line and run this command:
     ```bash
     npm install
     ```
 
-2.  **Get a Gemini API Key:**
-    This project's AI features are powered by the Google Gemini API. You can get a free API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+2.  **Get Your Google AI Key:**
+    The AI features in this app are powered by Google. You need a special key to use them.
+    *   Go to [Google AI Studio](https://aistudio.google.com/app/apikey) to get your free API key.
 
-3.  **Set up your environment file:**
-    - In the root of the project, you will find a `.env` file.
-    - Open it and replace `YOUR_API_KEY_HERE` with the key you obtained in the previous step:
-      ```env
-      GEMINI_API_KEY="YOUR_API_KEY_HERE"
-      ```
+3.  **Add Your Key to the Project:**
+    *   In the main project folder, find the file named `.env`.
+    *   Open it and you will see a line that says `GEMINI_API_KEY="YOUR_API_KEY_HERE"`.
+    *   Replace `"YOUR_API_KEY_HERE"` with the key you just got from Google.
 
-4.  **Run the development server:**
+4.  **Start the App:**
+    Now, run this command in your terminal:
     ```bash
     npm run dev
     ```
-    Open [http://localhost:9002](http://localhost:9002) with your browser to see the result.
+    Your app will be running at [http://localhost:9002](http://localhost:9002). Open this link in your web browser to see it!
 
 ---
 
-## Tech Stack
+## Technology Used
 
-- **Framework:** [Next.js](https://nextjs.org/)
-- **AI:** [Google Gemini via Genkit](https://firebase.google.com/docs/genkit)
-- **UI:** [React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/)
-- **Backend & Database:** [Firebase Authentication](https://firebase.google.com/docs/auth), [Firestore](https://firebase.google.com/docs/firestore)
+*   **Framework:** Next.js
+*   **Artificial Intelligence:** Google Gemini
+*   **User Interface:** React, Tailwind CSS, and shadcn/ui
+*   **Backend:** Firebase (for user accounts and data storage)
