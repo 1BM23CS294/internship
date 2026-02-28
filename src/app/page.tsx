@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useActionState } from 'react';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase, Download } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase, Download, Star } from 'lucide-react';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,6 +35,7 @@ import { FeedbackCard } from './components/feedback-card';
 import { analyzeResume } from '@/app/actions';
 import { CaseSensitive, Flame, GitCompareArrows, Globe, School, Search, Sparkles, TrendingDown, UserCheck, UserRound, Video, Fingerprint, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { FeedbackDisplayCard } from './components/feedback-display-card';
 
 
 function SubmitButton({ step, setStep, isPending }: { step: number; setStep: (step: number) => void; isPending: boolean; }) {
@@ -194,15 +195,10 @@ export default function Home() {
     }
 
     setIsDownloading(true);
-    // The report ID is ALWAYS the UUID from the analysis data.
     const reportId = selectedCandidate.id;
 
     try {
-      // Pass data to the new tab via sessionStorage to prevent race conditions.
-      sessionStorage.setItem(`report-data-${reportId}`, JSON.stringify(selectedCandidate));
-
-      // If the report is new and not saved yet, save it to Firestore using the UUID as the document ID.
-      // This is non-blocking for the user.
+      // If the report is new and not yet saved, save it now and wait for it to complete.
       if (!selectedCandidate.firestoreId && reportsCollection && user && !isAnonymous) {
         const docRef = doc(reportsCollection, reportId); // Use UUID as doc ID
         
@@ -213,30 +209,33 @@ export default function Home() {
           userId: user.uid,
         };
 
-        setDoc(docRef, reportData)
-          .then(() => {
-            // Silently update the state on the main page to mark as saved.
-            setSelectedCandidate(prev => prev && prev.id === reportId ? { ...prev, firestoreId: reportId } : prev);
-            console.log("Report saved to history with ID:", reportId);
-          })
-          .catch((error) => {
-            console.error("Failed to save report to history:", error);
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'create',
-                requestResourceData: reportData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-          });
+        // Await the save operation to ensure data is available for the report page.
+        await setDoc(docRef, reportData);
+        
+        // After successful save, update the local state to reflect that it's saved.
+        setSelectedCandidate(prev => prev && prev.id === reportId ? { ...prev, firestoreId: reportId } : prev);
+        
+        toast({ title: 'Report saved to history' });
       }
 
+      // Now that we're sure it's saved (or was already saved), open the report page.
+      // The report page will now reliably fetch from Firestore.
       window.open(`/report/${reportId}`, '_blank');
 
-    } catch (e) {
-      console.error("Failed to prepare report for download:", e);
+    } catch (error: any) {
+      console.error("Failed to save or download report:", error);
+
+      if (error.code && error.code.startsWith('permission-denied') && reportsCollection) {
+          const permissionError = new FirestorePermissionError({
+              path: doc(reportsCollection, reportId).path,
+              operation: 'create',
+          });
+          errorEmitter.emit('permission-error', permissionError);
+      }
+      
       toast({
         title: "Download Failed",
-        description: "An unexpected error occurred while preparing the report.",
+        description: "Could not save the report to history. Please check your connection or permissions.",
         variant: "destructive",
       });
     } finally {
@@ -437,6 +436,7 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-8">
+                    <FeedbackDisplayCard />
                     <Card className="bg-black/20 border-primary/20 backdrop-blur-xl shadow-2xl shadow-primary/20 flex flex-col">
                         <CardHeader className='flex-row items-center justify-between pb-4'>
                             <CardTitle className="flex items-center gap-2 text-lg font-semibold"><Users size={18} /> Analysis History</CardTitle>

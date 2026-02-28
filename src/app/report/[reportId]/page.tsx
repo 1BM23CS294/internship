@@ -13,54 +13,48 @@ export default function ReportPage({ params }: { params: { reportId: string } })
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
 
-    const [reportData, setReportData] = useState<AnalyzedCandidate | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
+    // The document will be fetched based on the user's UID and the reportId from the URL.
     const reportDocRef = useMemoFirebase(() => {
+        // We need to wait for the user to be loaded to get their UID.
         if (!user || !firestore || !reportId) return null;
+        // This assumes the report is stored under the currently logged-in user's collection.
         return doc(firestore, 'users', user.uid, 'analysisReports', reportId);
     }, [firestore, user, reportId]);
 
-    const { data: reportDocFromHook, isLoading: isReportLoading, error: reportError } = useDoc(reportDocRef);
+    // useDoc will handle the loading, error, and data states for the Firestore document.
+    const { data: reportDoc, isLoading: isReportLoading, error: reportError } = useDoc(reportDocRef);
+
+    const [reportData, setReportData] = useState<AnalyzedCandidate | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Prioritize data from sessionStorage
-        const sessionDataString = sessionStorage.getItem(`report-data-${reportId}`);
-        if (sessionDataString) {
+        if (isReportLoading || isUserLoading) {
+            // Still loading, do nothing yet.
+            return;
+        }
+
+        if (reportDoc) {
             try {
-                const sessionData = JSON.parse(sessionDataString);
-                setReportData(sessionData);
-                setIsLoading(false);
-                sessionStorage.removeItem(`report-data-${reportId}`); // Clean up
-                return; // Data found, no need to proceed to Firestore logic
+                // If the document exists, parse the JSON data.
+                const firestoreData = JSON.parse(reportDoc.reportJson);
+                setReportData(firestoreData);
+                setError(null);
             } catch (e) {
-                console.error("Could not parse report data from session storage.", e);
-                // If parsing fails, fall through to Firestore
+                console.error("Could not parse report data from Firestore.", e);
+                setError("Failed to read report data. The format is invalid.");
             }
+        } else if (reportError) {
+             // If the useDoc hook returned an error (e.g., permissions).
+             console.error("Firestore error:", reportError);
+             setError("Could not load report due to a database error.");
+        } else if (!isReportLoading && !reportDoc) {
+             // If loading is finished and there's no document, it doesn't exist.
+            setError("Report not found. It may not have been saved to your history yet.");
         }
+    }, [reportDoc, isReportLoading, reportError, isUserLoading]);
 
-        // If no session data, use data from Firestore hook
-        if (!isReportLoading && !isUserLoading) {
-            if (reportDocFromHook) {
-                try {
-                    const firestoreData = JSON.parse(reportDocFromHook.reportJson);
-                    setReportData(firestoreData);
-                } catch (e) {
-                    console.error("Could not parse report data from Firestore.", e);
-                    setError("Failed to read report data.");
-                }
-            } else if (reportError) {
-                setError(reportError.message);
-            } else {
-                setError("Report document does not exist.");
-            }
-            setIsLoading(false);
-        }
-    }, [reportId, reportDocFromHook, isReportLoading, reportError, isUserLoading]);
-
-
-    if (isLoading) {
+    // Combined loading state
+    if (isReportLoading || isUserLoading) {
         return <PageLoader />;
     }
 
@@ -70,9 +64,8 @@ export default function ReportPage({ params }: { params: { reportId: string } })
                 <div>
                     <h1 className="text-2xl font-bold">Report Not Found</h1>
                     <p className="text-muted-foreground">
-                       The report data could not be loaded. Please try generating it again.
+                       {error || "The report could not be loaded. Please try again from the dashboard."}
                     </p>
-                    {error && <p className='text-xs text-destructive mt-2'>{error}</p>}
                 </div>
             </div>
         );

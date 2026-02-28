@@ -169,6 +169,46 @@
         "createdAt",
         "reportJson"
       ]
+    },
+    "Feedback": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Feedback",
+      "type": "object",
+      "description": "Stores user-submitted feedback about the website.",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The ID of the user who submitted the feedback (can be anonymous)."
+        },
+        "userName": {
+          "type": "string",
+          "description": "Display name of the user submitting feedback."
+        },
+        "userPhotoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile picture."
+        },
+        "rating": {
+          "type": "number",
+          "description": "A star rating from 1 to 5."
+        },
+        "comments": {
+          "type": "string",
+          "description": "Optional user comments."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the feedback was submitted."
+        }
+      },
+      "required": [
+        "userId",
+        "userName",
+        "rating",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -252,6 +292,22 @@
             {
               "name": "analysisReportId",
               "description": "The unique ID of the analysis report."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/feedback/{feedbackId}",
+        "definition": {
+          "entityName": "Feedback",
+          "schema": {
+            "$ref": "#/backend/entities/Feedback"
+          },
+          "description": "A public collection to store website feedback from all users.",
+          "params": [
+            {
+              "name": "feedbackId",
+              "description": "The unique ID for the feedback document."
             }
           ]
         }

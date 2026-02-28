@@ -83,5 +83,14 @@ service cloud.firestore {
       allow update: if isExistingOwner(userId) && isValidSubcollectionDocOnUpdate();
       allow delete: if isExistingOwner(userId);
     }
+
+    match /feedback/{feedbackId} {
+      // Anyone can read feedback.
+      allow list, get: if true;
+      // Any signed-in user (including anonymous) can create feedback.
+      allow create: if isSignedIn();
+      // Only the user who created it can update or delete it.
+      allow update, delete: if isOwner(resource.data.userId);
+    }
   }
 }
