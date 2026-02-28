@@ -17,7 +17,7 @@ export type GetResumeExportsInput = z.infer<typeof GetResumeExportsInputSchema>;
 
 const ResumeExportOutputSchema = z.object({
   exportFormats: z.array(z.object({
-    formatName: z.string().describe('The name of the export format (e.g., "Europass XML").'),
+    formatName: z.string().describe('The name of the export format (e.g., "PDF Report").'),
     description: z.string().describe('A brief description of the format.'),
     downloadUrl: z.string().url().describe('A mock download URL for the exported file.'),
   })).describe('A list of available resume export formats.'),
@@ -38,24 +38,24 @@ const getResumeExportsFlow = ai.defineFlow(
   },
   async (input) => {
     await new Promise(resolve => setTimeout(resolve, 250)); // Simulate processing time
-    // Using valid data URIs for empty files to satisfy the schema validation (z.string().url())
-    // and provide a better mock download experience.
+    // In a real application, this flow would generate actual files from the resume data.
+    // For this prototype, we provide mock, empty files as data URIs.
     return {
       exportFormats: [
         {
-          formatName: "Standard PDF",
-          description: "A universally compatible PDF document.",
+          formatName: "PDF Report",
+          description: "A professional, universally compatible PDF of the analysis.",
           downloadUrl: "data:application/pdf;base64,",
         },
         {
-          formatName: "Europass XML",
-          description: "Standardized format for applying for jobs in Europe.",
-          downloadUrl: "data:application/xml;base64,",
+          formatName: "Word Document (DOCX)",
+          description: "An editable document containing the full analysis report.",
+          downloadUrl: "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,",
         },
         {
-            formatName: "JSON Resume",
-            description: "An open-source standard for developers.",
-            downloadUrl: "data:application/json;base64,",
+            formatName: "PNG Image",
+            description: "A shareable image summary of the analysis report.",
+            downloadUrl: "data:image/png;base64,",
         }
       ],
     };
