@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useActionState } from 'react';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase, Download } from 'lucide-react';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -73,7 +73,7 @@ function getInitials(name: string) {
 
 export default function Home() {
   const [step, setStep] = useState(1);
-  const [selectedCandidate, setSelectedCandidate] = useState<AnalyzedCandidate | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<(AnalyzedCandidate & { firestoreId?: string; }) | null>(null);
   const [resumeFileNames, setResumeFileNames] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -196,9 +196,31 @@ export default function Home() {
     toast({ title: "Signed Out" });
   };
 
-  const handleHistoryClick = (candidate: AnalyzedCandidate) => {
+  const handleHistoryClick = (candidate: AnalyzedCandidate & { firestoreId: string; }) => {
       setSelectedCandidate(candidate);
       setTimeout(() => resultsRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!selectedCandidate) {
+      toast({
+        title: "No report selected",
+        description: "Please select an analysis report to download.",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      localStorage.setItem('printableReport', JSON.stringify(selectedCandidate));
+      window.open('/report', '_blank');
+    } catch (error) {
+      console.error("Error saving report to localStorage", error);
+      toast({
+        title: "Download Failed",
+        description: "Could not prepare the report for download. It might be too large.",
+        variant: "destructive",
+      });
+    }
   };
 
   const renderMainPanelContent = () => {
@@ -454,6 +476,15 @@ export default function Home() {
                 </div>
             </div>
             
+            {selectedCandidate && (
+                <div className="my-8 text-center">
+                    <Button size="lg" onClick={handleDownloadPdf}>
+                        <Download className="mr-2 h-5 w-5" />
+                        Download Full Report as PDF
+                    </Button>
+                </div>
+            )}
+
             <div className="space-y-8">
               <FeatureCarousel />
               <HowToUse />
