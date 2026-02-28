@@ -167,7 +167,7 @@ async function _analyzeSingleResume(
         return `data:${file.type};base64,${Buffer.from(fileBuffer).toString('base64')}`;
     };
 
-    await new Promise(resolve => setTimeout(resolve, 2500 + Math.random() * 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     const extractedInfo = _generateMockExtractedInfo(resumeFile.name);
     
     const resumeExperienceSummary = extractedInfo.summary || extractedInfo.experience.map(exp => `${exp.title} at ${exp.company}: ${exp.description}`).join('\n');
