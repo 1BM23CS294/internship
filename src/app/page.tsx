@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useActionState } from 'react';
-import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase, Star } from 'lucide-react';
+import { FileText, UploadCloud, Users, Loader2, Trash2, LogOut, Languages, Bot, ArrowRight, ArrowLeft, Lightbulb, Info, Rocket, Medal, Files, Filter, FileJson, Ship, Briefcase, Star, CaseSensitive, Flame, GitCompareArrows, Globe, School, Search, Sparkles, TrendingDown, UserCheck, UserRound, Video, Fingerprint, AlertTriangle } from 'lucide-react';
 import type { AnalyzedCandidate } from '@/lib/types';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -34,9 +34,9 @@ import { HowToUse } from './components/how-to-use';
 import { RoadmapCard } from './components/roadmap-card';
 import { FeedbackCard } from './components/feedback-card';
 import { analyzeResume } from '@/app/actions';
-import { CaseSensitive, Flame, GitCompareArrows, Globe, School, Search, Sparkles, TrendingDown, UserCheck, UserRound, Video, Fingerprint, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { FeedbackDisplayCard } from './components/feedback-display-card';
+import { ReadmeCard } from './components/readme-card';
 
 
 function SubmitButton({ step, setStep, isPending }: { step: number; setStep: (step: number) => void; isPending: boolean; }) {
@@ -524,6 +524,7 @@ export default function Home() {
               <FeatureCarousel />
               <HowToUse />
               <RoadmapCard />
+              <ReadmeCard />
             </div>
         </div>
     </div>
