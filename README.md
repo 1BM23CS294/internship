@@ -59,7 +59,7 @@ After installation is complete, type:
 **Step 7: Access the Website**
 
 After running the command, a local development link will appear in the terminal, such as:
-**http://localhost:5173**
+**http://localhost:9002**
 Copy this link and paste it into your browser.
 Now the website will be successfully running on your local system.
 
