@@ -2,7 +2,7 @@
 
 This app is your personal AI assistant for understanding resumes. 
 Whether you're a recruiter looking for the perfect candidate or 
-a job seeker aiming to improve your resume, this tool is for you.
+a job seeker aiming to improve your resume,this tool is for you.
 
 ## What Can It Do?
 *   **Analyze Resumes:** Upload a resume and a job description to see how well they match.
