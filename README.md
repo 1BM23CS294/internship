@@ -1,70 +1,54 @@
-# Welcome to the Intelligent Resume Analyzer!
+**Intelligent Resume Analyzer**
 
-This app is your personal AI assistant for understanding resumes. 
-Whether you're a recruiter looking for the perfect candidate or 
-a job seeker aiming to improve your resume,this tool is for you.
+This project is an AI-based resume analysis system that helps users understand and improve resumes.
+It allows recruiters and job seekers to analyze resumes, compare candidates, and get AI-based insights through a simple web dashboard.
 
-## What Can It Do?
-*   **Analyze Resumes:** Upload a resume and a job description to see how well they match.
-*   **Compare Two Candidates:** Upload two resumes to get a side-by-side comparison.
-*   **Get Deep AI Insights:** Go beyond simple scores. Discover strengths, weaknesses, and even get a fun "resume roast" for constructive feedback.
-*   **Explore Career Tools:** Predict salary ranges, check for in-demand skills, and get personalized tips for improvement.
-*   **Save Your Work:** Sign up for a free account to save and review your analysis reports anytime.
+**Features**
 
-## Local Setup: Step-by-Step Guide!
-Follow these steps to run the Intelligent Resume Analyzer on your own computer.
+• Analyze resumes with job descriptions
+• Compare two resumes side-by-side
+• Get AI insights on strengths and weaknesses
+• Predict salary range and in-demand skills
+• Get tips to improve resumes
+• Save analysis reports for future use
 
-**Step 1: Download the Project from GitHub**
+**Local Setup Guide**
 
-Open the GitHub repository in your browser.
-Click on the Code button.
-Select Download ZIP.
-The ZIP file will be downloaded to your system.
+**Step 1: Download the Project**
 
-**Step 2: Extract the ZIP File**
+Open the GitHub repository → Click Code → Select Download ZIP.
 
-Go to your Downloads folder.
-Click on the downloaded ZIP file.
-Click Extract All.
-Open the extracted project folder.
+**Step 2: Extract the File**
 
-**Step 3: Open Project in VS Code**
+Go to Downloads → Extract the ZIP file → Open the extracted folder.
 
-Inside the extracted project folder, right-click on an empty area.
-Click Open in Terminal.
-In the terminal, type:
-**code .**
-Press Enter.
-This will open the entire project in VS Code.
+**Step 3: Open in VS Code**
+
+Right-click inside the project folder → Click Open in Terminal → Type: code .
 
 **Step 4: Open Terminal in VS Code**
 
-After VS Code opens:
-Use the shortcut key:
-Ctrl + `
-(backtick key below Esc)
-OR
-Click Terminal → New Terminal
+Press: Ctrl + `
 
-**Step 5: Install Required Dependencies**
+Or go to Terminal → New Terminal
 
-In the VS Code terminal, type:
-**npm i**
-This will install all the required project dependencies.
+**Step 5: Install Dependencies**
+
+Run: npm i
 
 **Step 6: Run the Project**
-After installation is complete, type:
-**npm run dev**
 
-**Step 7: Access the Website**
+Run: npm run dev
 
-After running the command, a local development link will appear in the terminal, such as:
-**http://localhost:9002**
-Copy this link and paste it into your browser.
-Now the website will be successfully running on your local system.
+**Step 7: Open the Website**
 
-**⚠ Important Requirements**
+After running the command, a link like this will appear:
 
-Node.js must be installed on your system.
-Do not delete any project files.
-Always run npm i before starting the project for the first time.
+http://localhost:9002
+
+Copy the link and open it in your browser.
+
+**Requirements**
+
+• Node.js must be installed
+• Run npm i before starting the project
